@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Parasite – Historique des parties</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --bg-main-dark: radial-gradient(circle at top, #1b1f30 0, #080910 40%, #050509 100%);
+      --bg-header-dark: #05060c;
+      --bg-card-dark: #101425;
+      --border-card-dark: rgba(90, 100, 190, 0.8);
+      --text-main-dark: #f5f5ff;
+
+      --bg-main-light: #f4f6ff;
+      --bg-header-light: #ffffff;
+      --bg-card-light: #ffffff;
+      --border-card-light: rgba(170, 180, 230, 0.9);
+      --text-main-light: #14141f;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main-dark);
+      color: var(--text-main-dark);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    body.theme-dark {
+      background: var(--bg-main-dark);
+      color: var(--text-main-dark);
+    }
+
+    body.theme-light {
+      background: var(--bg-main-light);
+      color: var(--text-main-light);
+    }
+
+    /* TOP BAR identique au home */
+    .top-bar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--bg-header-dark);
+      border-bottom: 1px solid rgba(60, 65, 110, 0.7);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    body.theme-light .top-bar {
+      background: var(--bg-header-light);
+      border-color: rgba(175, 185, 230, 0.9);
+      box-shadow: 0 8px 24px rgba(20, 20, 80, 0.15);
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .logo-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: radial-gradient(circle at 30% 20%, #7cffd4 0, #18a58f 45%, #071f29 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: #041013;
+      box-shadow: 0 0 10px rgba(140, 255, 220, 0.7);
+    }
+
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .top-nav-item {
+      padding: 4px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      opacity: 0.85;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .top-nav-item.active {
+      background: rgba(120, 190, 255, 0.16);
+      opacity: 1;
+    }
+
+    body.theme-light .top-nav-item.active {
+      background: rgba(80, 120, 220, 0.12);
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .top-user {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      opacity: 0.9;
+    }
+
+    .theme-toggle {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid rgba(110, 120, 210, 0.9);
+      background: rgba(22, 26, 60, 0.92);
+      color: #e8ebff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    body.theme-light .theme-toggle {
+      background: #f4f5ff;
+      color: #22253d;
+      border-color: #c0c6ff;
+    }
+
+    .theme-toggle span.icon {
+      font-size: 13px;
+    }
+
+    /* PAGE */
+    .page {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 18px 18px 24px;
+    }
+
+    .page-inner {
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .card {
+      border-radius: 16px;
+      padding: 18px 20px;
+      background: var(--bg-card-dark);
+      border: 1px solid var(--border-card-dark);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    body.theme-light .card {
+      background: var(--bg-card-light);
+      border-color: var(--border-card-light);
+      box-shadow: 0 14px 32px rgba(20, 20, 80, 0.18);
+    }
+
+    h1, h2 {
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    h1 { font-size: 20px; }
+    h2 { font-size: 15px; }
+
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(110, 120, 210, 0.8);
+      background: rgba(36, 40, 80, 0.9);
+      color: #d1d5ff;
+    }
+
+    body.theme-light .tag {
+      background: rgba(210, 216, 255, 0.7);
+      color: #202440;
+    }
+
+    .divider {
+      height: 1px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, #44487a, transparent);
+      margin: 10px 0;
+    }
+
+    body.theme-light .divider {
+      background: linear-gradient(90deg, transparent, #c0c4ff, transparent);
+    }
+
+    .small-text {
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    button {
+      font-family: inherit;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 8px 12px;
+      transition: transform 0.08s, box-shadow 0.08s, background 0.12s, border-color 0.12s, opacity 0.12s;
+    }
+
+    .btn-ghost {
+      background: rgba(18, 18, 40, 0.95);
+      color: #d0d4ff;
+      border: 1px solid #4b4d8d;
+    }
+
+    body.theme-light .btn-ghost {
+      background: #f5f6ff;
+      color: #2a2e55;
+      border-color: #c0c6ff;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: rgba(30, 30, 60, 0.95);
+      transform: translateY(-1px);
+    }
+
+    .btn-small {
+      padding: 6px 9px;
+      font-size: 12px;
+    }
+
+    .inline-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 9px;
+      border-radius: 10px;
+      background: rgba(16, 18, 40, 0.9);
+      border: 1px solid rgba(70, 74, 130, 0.9);
+      font-size: 12px;
+    }
+
+    body.theme-light .item-row {
+      background: #eef0ff;
+      border-color: #c0c6ff;
+    }
+
+    .item-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item-title {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .item-sub {
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+
+    .pill-win {
+      background: rgba(56, 142, 60, 0.18);
+      color: #c8f7c5;
+      border: 1px solid rgba(56, 142, 60, 0.6);
+    }
+
+    .pill-loss {
+      background: rgba(198, 40, 40, 0.18);
+      color: #ffcdd2;
+      border: 1px solid rgba(198, 40, 40, 0.6);
+    }
+
+    .pill-draw {
+      background: rgba(255, 213, 79, 0.18);
+      color: #fff9c4;
+      border: 1px solid rgba(255, 213, 79, 0.6);
+    }
+
+    .pill-unknown {
+      background: rgba(96, 125, 139, 0.18);
+      color: #cfd8dc;
+      border: 1px solid rgba(96, 125, 139, 0.6);
+    }
+
+    .error {
+      font-size: 12px;
+      color: #ff8a8a;
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="top-left">
+      <div class="logo">
+        <div class="logo-icon">🦠</div>
+        <span>PARASITE</span>
+      </div>
+      <nav class="top-nav">
+        <div class="top-nav-item" id="nav-home">Jouer</div>
+        <div class="top-nav-item" id="nav-stats">Statistiques</div>
+        <div class="top-nav-item active">Historique</div>
+      </nav>
+    </div>
+    <div class="top-right">
+      <div class="top-user" id="top-user-info">Invité</div>
+      <button type="button" id="theme-toggle-btn" class="theme-toggle">
+        <span class="icon">🌙</span><span id="theme-toggle-label">Mode sombre</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-inner">
+      <section class="card">
+        <div class="header-row">
+          <div>
+            <h1>Historique des parties</h1>
+            <p class="subtitle" id="history-subtitle">
+              Chargement de ton historique...
+            </p>
+          </div>
+          <div class="tag">
+            Joueur : <span id="history-player-name">-</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2>Parties terminées</h2>
+        <p class="small-text">
+          Tu verras ici les parties en ligne où tu as joué et qui sont terminées (sauvegarde depuis le backend).
+        </p>
+
+        <div id="history-list" class="history-list">
+          <span class="small-text">Chargement...</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="inline-row">
+          <button type="button" class="btn-ghost btn-small" id="btn-refresh-history">
+            🔁 Rafraîchir
+          </button>
+          <span class="small-text">
+            Pour l’instant, on filtre les parties par statut côté client (<code>status</code> ou <code>phase</code>).
+          </span>
+        </div>
+
+        <div class="error" id="history-error"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHj4uu6zCqVJIyzXCH3u5LWQQ88sfxLKs",
+      authDomain: "parasite-c66b1.firebaseapp.com",
+      projectId: "parasite-c66b1",
+      storageBucket: "parasite-c66b1.firebasestorage.app",
+      messagingSenderId: "944195028940",
+      appId: "1:944195028940:web:43da8df1acdf4d6d567f69",
+      measurementId: "G-QV1GLRX5MH"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    // DOM
+    const themeToggleBtn   = document.getElementById("theme-toggle-btn");
+    const themeToggleLabel = document.getElementById("theme-toggle-label");
+    const topUserInfoEl    = document.getElementById("top-user-info");
+
+    const navHome  = document.getElementById("nav-home");
+    const navStats = document.getElementById("nav-stats");
+
+    const historySubtitleEl   = document.getElementById("history-subtitle");
+    const historyPlayerNameEl = document.getElementById("history-player-name");
+    const historyListEl       = document.getElementById("history-list");
+    const historyErrorEl      = document.getElementById("history-error");
+    const btnRefreshHistory   = document.getElementById("btn-refresh-history");
+
+    let currentUser = null;
+
+    // THEME (comme home)
+    function applyTheme(theme) {
+      const body = document.body;
+      if (theme === "light") {
+        body.classList.remove("theme-dark");
+        body.classList.add("theme-light");
+        themeToggleLabel.textContent = "Mode clair";
+        themeToggleBtn.querySelector(".icon").textContent = "☀️";
+      } else {
+        body.classList.remove("theme-light");
+        body.classList.add("theme-dark");
+        themeToggleLabel.textContent = "Mode sombre";
+        themeToggleBtn.querySelector(".icon").textContent = "🌙";
+      }
+      localStorage.setItem("parasite_theme", theme);
+    }
+
+    function initTheme() {
+      const stored = localStorage.getItem("parasite_theme");
+      applyTheme(stored === "light" ? "light" : "dark");
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      const current = document.body.classList.contains("theme-light") ? "light" : "dark";
+      applyTheme(current === "light" ? "dark" : "light");
+    });
+
+    initTheme();
+
+    // NAV
+    if (navHome) {
+      navHome.addEventListener("click", () => {
+        window.location.href = "home.html";
+      });
+    }
+    if (navStats) {
+      navStats.addEventListener("click", () => {
+        window.location.href = "stats.html";
+      });
+    }
+
+    // HISTORIQUE
+    function formatDate(ts) {
+      if (!ts) return "Date inconnue";
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function getOutcomePill(userUid, data) {
+      let label = "Inconnu";
+      let type = "unknown";
+
+      if (data.winnerUid) {
+        if (data.winnerUid === userUid) {
+          label = "Victoire";
+          type = "win";
+        } else {
+          label = "Défaite";
+          type = "loss";
+        }
+      } else if (Array.isArray(data.winnerUids) && data.winnerUids.length > 0) {
+        if (data.winnerUids.includes(userUid)) {
+          label = "Victoire (équipe)";
+          type = "win";
+        } else {
+          label = "Défaite";
+          type = "loss";
+        }
+      } else if (data.result === "draw") {
+        label = "Égalité";
+        type = "draw";
+      }
+
+      const span = document.createElement("span");
+      span.className = "pill " +
+        (type === "win" ? "pill-win" :
+         type === "loss" ? "pill-loss" :
+         type === "draw" ? "pill-draw" : "pill-unknown");
+      span.textContent = label;
+      return span;
+    }
+
+    async function loadHistory() {
+      const user = auth.currentUser;
+      if (!user || !historyListEl) return;
+
+      historyErrorEl.textContent = "";
+      historyListEl.innerHTML = `<span class="small-text">Chargement...</span>`;
+
+      try {
+        // On récupère toutes les games où le joueur a participé
+        const snap = await db.collection("games")
+          .where("playerIds", "array-contains", user.uid)
+          .limit(100)
+          .get();
+
+        if (snap.empty) {
+          historyListEl.innerHTML = `<span class="small-text">Aucune partie trouvée pour l’instant.</span>`;
+          historySubtitleEl.textContent = "Aucun historique pour le moment.";
+          return;
+        }
+
+        // On filtre côté client les parties qui semblent terminées
+        const allDocs = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+        const finished = allDocs.filter(({ data }) => {
+          const status = data.status || "";
+          const phase  = data.phase || "";
+          return (
+            status === "finished" ||
+            status === "over"     ||
+            phase  === "GAME_OVER"
+          );
+        });
+
+        if (finished.length === 0) {
+          historyListEl.innerHTML = `<span class="small-text">
+            Tes parties ne sont pas encore marquées comme “terminées” dans la base.
+          </span>`;
+          historySubtitleEl.textContent = "Aucune partie marquée comme terminée pour l’instant.";
+          return;
+        }
+
+        // Tri par date de fin / dernière mise à jour
+        finished.sort((a, b) => {
+          const da = a.data.endedAt || a.data.updatedAt || null;
+          const dbb = b.data.endedAt || b.data.updatedAt || null;
+          const ta = da ? (da.toMillis ? da.toMillis() : da) : 0;
+          const tb = dbb ? (dbb.toMillis ? dbb.toMillis() : dbb) : 0;
+          return tb - ta;
+        });
+
+        historyListEl.innerHTML = "";
+
+        finished.forEach(({ id, data }) => {
+          const code       = data.code || id;
+          const boardSize  = data.boardSize || 20;
+          const maxPlayers = data.maxPlayers || (data.numPlayers || (data.playerIds ? data.playerIds.length : 2));
+          const playerIds  = data.playerIds || [];
+          const namesById  = data.playerNamesById || {};
+          const endedAt    = data.endedAt || data.updatedAt || null;
+
+          const names = playerIds.map(uid => namesById[uid] || uid.slice(0, 5)).join(", ") || "?";
+
+          const row = document.createElement("div");
+          row.className = "item-row";
+
+          const main = document.createElement("div");
+          main.className = "item-main";
+          main.innerHTML = `
+            <div class="item-title">Salle ${code} – ${boardSize}×${boardSize}</div>
+            <div class="item-sub">
+              Joueurs : ${names}<br/>
+              Terminé le : ${formatDate(endedAt)}
+            </div>
+          `;
+
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          const pill = getOutcomePill(user.uid, data);
+          actions.appendChild(pill);
+
+          const replayBtn = document.createElement("button");
+          replayBtn.className = "btn-ghost btn-small";
+          replayBtn.textContent = "Voir la partie";
+          replayBtn.addEventListener("click", () => {
+            // Pour l'instant → on recharge game.html avec la room
+            window.location.href = `game.html?room=${code}`;
+          });
+          actions.appendChild(replayBtn);
+
+          row.appendChild(main);
+          row.appendChild(actions);
+          historyListEl.appendChild(row);
+        });
+
+        historySubtitleEl.textContent = "Tes parties terminées (filtrées depuis la collection games).";
+
+      } catch (e) {
+        console.error(e);
+        historyErrorEl.textContent = "Erreur lors du chargement de l’historique.";
+        historyListEl.innerHTML = `<span class="small-text">Impossible de charger les parties.</span>`;
+      }
+    }
+
+    if (btnRefreshHistory) {
+      btnRefreshHistory.addEventListener("click", () => {
+        loadHistory();
+      });
+    }
+
+    // AUTH
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        historySubtitleEl.textContent = "Tu dois être connecté pour voir ton historique. Redirection...";
+        setTimeout(() => {
+          window.location.href = "home.html";
+        }, 800);
+        return;
+      }
+
+      currentUser = user;
+
+      let displayName = user.displayName;
+      if (!displayName) {
+        const snap = await db.collection("users").doc(user.uid).get();
+        if (snap.exists) {
+          const data = snap.data();
+          displayName = data.displayName || user.email;
+        } else {
+          displayName = user.email;
+        }
+      }
+
+      topUserInfoEl.textContent     = displayName || user.email || "Connecté";
+      historyPlayerNameEl.textContent = displayName || user.email || "-";
+
+      loadHistory();
+    });
+  </script>
+</body>
+</html>

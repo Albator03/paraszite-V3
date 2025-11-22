@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Parasite – Accueil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --bg-main-dark: radial-gradient(circle at top, #1b1f30 0, #080910 40%, #050509 100%);
+      --bg-header-dark: #05060c;
+      --bg-card-dark: #101425;
+      --border-card-dark: rgba(90, 100, 190, 0.8);
+      --text-main-dark: #f5f5ff;
+
+      --bg-main-light: #f4f6ff;
+      --bg-header-light: #ffffff;
+      --bg-card-light: #ffffff;
+      --border-card-light: rgba(170, 180, 230, 0.9);
+      --text-main-light: #14141f;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main-dark);
+      color: var(--text-main-dark);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    body.theme-dark {
+      background: var(--bg-main-dark);
+      color: var(--text-main-dark);
+    }
+
+    body.theme-light {
+      background: var(--bg-main-light);
+      color: var(--text-main-light);
+    }
+
+    /* TOP BAR (style appli) */
+    .top-bar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--bg-header-dark);
+      border-bottom: 1px solid rgba(60, 65, 110, 0.7);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    body.theme-light .top-bar {
+      background: var(--bg-header-light);
+      border-color: rgba(175, 185, 230, 0.9);
+      box-shadow: 0 8px 24px rgba(20, 20, 80, 0.15);
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .logo-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: radial-gradient(circle at 30% 20%, #7cffd4 0, #18a58f 45%, #071f29 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: #041013;
+      box-shadow: 0 0 10px rgba(140, 255, 220, 0.7);
+    }
+
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .top-nav-item {
+      padding: 4px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      opacity: 0.85;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .top-nav-item.active {
+      background: rgba(120, 190, 255, 0.16);
+      opacity: 1;
+    }
+
+    body.theme-light .top-nav-item.active {
+      background: rgba(80, 120, 220, 0.12);
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .top-user {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      opacity: 0.9;
+    }
+
+    .theme-toggle {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid rgba(110, 120, 210, 0.9);
+      background: rgba(22, 26, 60, 0.92);
+      color: #e8ebff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    body.theme-light .theme-toggle {
+      background: #f4f5ff;
+      color: #22253d;
+      border-color: #c0c6ff;
+    }
+
+    .theme-toggle span.icon {
+      font-size: 13px;
+    }
+
+    /* MAIN LAYOUT */
+    .page {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 18px 18px 24px;
+    }
+
+    .page-inner {
+      width: 100%;
+      max-width: 1280px;
+    }
+
+    /* CARDS */
+    .card {
+      border-radius: 16px;
+      padding: 16px 18px;
+      background: var(--bg-card-dark);
+      border: 1px solid var(--border-card-dark);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    body.theme-light .card {
+      background: var(--bg-card-light);
+      border-color: var(--border-card-light);
+      box-shadow: 0 14px 32px rgba(20, 20, 80, 0.18);
+    }
+
+    h1, h2 {
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 20px;
+    }
+
+    h2 {
+      font-size: 15px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(110, 120, 210, 0.8);
+      background: rgba(36, 40, 80, 0.9);
+      color: #d1d5ff;
+    }
+
+    body.theme-light .tag {
+      background: rgba(210, 216, 255, 0.7);
+      color: #202440;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 8px;
+    }
+
+    .field label {
+      font-size: 12px;
+      margin-bottom: 4px;
+      opacity: 0.9;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"],
+    input[type="number"] {
+      flex: 1;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid #3f3f70;
+      background: #101022;
+      color: #f5f5ff;
+      font-size: 13px;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+
+    body.theme-light input[type="email"],
+    body.theme-light input[type="password"],
+    body.theme-light input[type="text"],
+    body.theme-light input[type="number"] {
+      background: #f7f8ff;
+      color: #141421;
+      border-color: #b9c1ff;
+    }
+
+    input::placeholder {
+      color: #7d7faf;
+    }
+
+    body.theme-light input::placeholder {
+      color: #8e93bc;
+    }
+
+    button {
+      font-family: inherit;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 8px 12px;
+      transition: transform 0.08s, box-shadow 0.08s, background 0.12s, border-color 0.12s, opacity 0.12s;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4da3ff, #2562c7);
+      color: #ecf4ff;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.65);
+      border: 1px solid #4da3ff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75);
+      background: linear-gradient(135deg, #58abff, #2055ad);
+    }
+
+    .btn-ghost {
+      background: rgba(18, 18, 40, 0.95);
+      color: #d0d4ff;
+      border: 1px solid #4b4d8d;
+    }
+
+    body.theme-light .btn-ghost {
+      background: #f5f6ff;
+      color: #2a2e55;
+      border-color: #c0c6ff;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: rgba(30, 30, 60, 0.95);
+      transform: translateY(-1px);
+    }
+
+    body.theme-light .btn-ghost:hover:not(:disabled) {
+      background: #e5e7ff;
+    }
+
+    .btn-small {
+      padding: 6px 9px;
+      font-size: 12px;
+    }
+
+    .toggle-auth {
+      margin-top: 4px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .toggle-auth button {
+      background: none;
+      border: none;
+      color: #ffd666;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 12px;
+    }
+
+    .error {
+      font-size: 12px;
+      color: #ff8a8a;
+      min-height: 1.2em;
+    }
+
+    .status {
+      font-size: 12px;
+      color: #b8ffb8;
+      min-height: 1.1em;
+    }
+
+    .status-muted {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .section-title {
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.9;
+    }
+
+    .divider {
+      height: 1px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, #44487a, transparent);
+      margin: 8px 0;
+    }
+
+    body.theme-light .divider {
+      background: linear-gradient(90deg, transparent, #c0c4ff, transparent);
+    }
+
+    .inline-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .small-text {
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(60, 120, 255, 0.18);
+      border: 1px solid rgba(60, 120, 255, 0.7);
+      color: #c5d8ff;
+    }
+
+    body.theme-light .pill {
+      background: rgba(80, 120, 220, 0.14);
+      color: #283060;
+      border-color: rgba(100, 130, 220, 0.9);
+    }
+
+    .hidden { display: none; }
+
+    /* GRID APP */
+    .auth-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 24px;
+    }
+
+    #auth-card {
+      max-width: 420px;
+      width: 100%;
+    }
+
+    #app-card {
+      gap: 14px;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.3fr) minmax(0, 1.1fr);
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 1024px) {
+      .app-grid {
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.4fr);
+      }
+    }
+
+    @media (max-width: 800px) {
+      .app-grid {
+        grid-template-columns: 1fr;
+      }
+      .auth-wrapper { margin-top: 12px; }
+    }
+
+    .panel {
+      border-radius: 14px;
+      padding: 14px 14px 12px;
+      background: radial-gradient(circle at top left, rgba(60, 90, 190, 0.14) 0, rgba(8, 10, 24, 0.96) 40%, #05060c 100%);
+      border: 1px solid rgba(90, 100, 180, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    body.theme-light .panel {
+      background: linear-gradient(145deg, #ffffff, #f0f2ff);
+      border-color: rgba(170, 180, 230, 0.95);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* LISTES & ITEMS (parties / amis / résultats) */
+    .games-list,
+    .friends-list,
+    .search-results {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 9px;
+      border-radius: 10px;
+      background: rgba(16, 18, 40, 0.9);
+      border: 1px solid rgba(70, 74, 130, 0.9);
+      font-size: 12px;
+    }
+
+    body.theme-light .item-row {
+      background: #eef0ff;
+      border-color: #c0c6ff;
+    }
+
+    .item-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item-title {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .item-sub {
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(90, 90, 150, 0.9);
+      background: rgba(10, 10, 26, 0.9);
+      cursor: pointer;
+      font-size: 14px;
+      color: #f1f1ff;
+    }
+
+    .icon-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+      background: rgba(30, 30, 60, 0.95);
+    }
+
+    body.theme-light .icon-btn {
+      background: #f6f7ff;
+      color: #24253c;
+      border-color: #c0c6ff;
+    }
+
+    .icon-btn.danger {
+      border-color: rgba(255, 138, 128, 0.8);
+      background: rgba(60, 16, 20, 0.9);
+      color: #ffd4d0;
+    }
+
+    body.theme-light .icon-btn.danger {
+      background: #ffe6e3;
+      color: #8b1c1c;
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    .status-dot.online {
+      background: #4caf50;
+      box-shadow: 0 0 6px rgba(76, 175, 80, 0.8);
+    }
+
+    .status-dot.offline {
+      background: #777b9a;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="top-left">
+      <div class="logo">
+        <div class="logo-icon">🦠</div>
+        <span>PARASITE</span>
+      </div>
+      <nav class="top-nav">
+        <div class="top-nav-item active" id="nav-play">Jouer</div>
+        <div class="top-nav-item" id="nav-stats">Statistiques</div>
+        <div class="top-nav-item" id="nav-history">Historique</div>
+      </nav>
+    </div>
+    <div class="top-right">
+      <div class="top-user" id="top-user-info">Invité</div>
+      <button type="button" id="theme-toggle-btn" class="theme-toggle">
+        <span class="icon">🌙</span><span id="theme-toggle-label">Mode sombre</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-inner">
+      <!-- AUTH VIEW -->
+      <div class="auth-wrapper" id="auth-wrapper">
+        <section class="card" id="auth-card">
+          <div class="header-row">
+            <div>
+              <h1>Connexion</h1>
+              <p class="subtitle">
+                Crée un compte pour sauvegarder tes parties, jouer en ligne et suivre tes statistiques comme sur une vraie plateforme.
+              </p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="auth-email">Email</label>
+            <input type="email" id="auth-email" placeholder="ton.email@example.com" />
+          </div>
+
+          <div class="field">
+            <label for="auth-password">Mot de passe</label>
+            <div class="input-row">
+              <input type="password" id="auth-password" placeholder="••••••••" />
+              <button type="button" class="btn-ghost btn-small" id="toggle-password">
+                👁
+              </button>
+            </div>
+          </div>
+
+          <div class="field" id="pseudo-field">
+            <label for="auth-pseudo">Pseudo (affiché dans le jeu)</label>
+            <input type="text" id="auth-pseudo" placeholder="Ex : ZergMaster" />
+          </div>
+
+          <div class="error" id="auth-error"></div>
+
+          <button type="button" class="btn-primary" id="auth-submit">
+            S'inscrire
+          </button>
+
+          <div class="toggle-auth">
+            <span id="toggle-text">
+              Tu as déjà un compte ?
+            </span>
+            <button type="button" id="toggle-mode-btn">
+              Se connecter
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- APP VIEW -->
+      <section class="card hidden" id="app-card">
+        <div class="app-header-row">
+          <div>
+            <h1>Jouer à Parasite</h1>
+            <p class="subtitle" id="welcome-text">
+              Chargement du profil...
+            </p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div class="tag">
+              Statut : <span id="auth-status-label">Connecté</span>
+            </div>
+            <div class="inline-row">
+              <button type="button" class="btn-ghost btn-small" id="btn-stats">
+                📊 Mes statistiques
+              </button>
+              <button type="button" class="btn-ghost btn-small" id="btn-logout">
+                Se déconnecter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-grid">
+          <!-- COLONNE 1 : JOUER MAINTENANT -->
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Jouer maintenant</h2>
+            </div>
+            <p class="subtitle">
+              Tu es prêt à jouer avec ton pseudo Parasite. Lance une partie locale ou crée une salle en ligne.
+            </p>
+
+            <div class="status-muted" id="name-hint"></div>
+
+            <div class="divider"></div>
+
+            <div class="section-title">Partie locale</div>
+            <p class="small-text">
+              Tous les joueurs sont devant le même écran. Aucun enregistrement en ligne.
+            </p>
+            <button type="button" class="btn-ghost" id="btn-local-game" style="width:100%;margin-top:4px;">
+              🎮 Démarrer une partie locale
+            </button>
+
+            <div class="divider"></div>
+
+            <div class="section-title">Créer une partie en ligne</div>
+            <p class="small-text">
+              Un code sera généré. Donne-le à tes amis ou invite-les depuis ta liste d'amis.
+            </p>
+            <div class="field">
+              <label for="create-max-players">Nombre de joueurs (2 à 6)</label>
+              <input type="number" id="create-max-players" min="2" max="6" value="2" />
+            </div>
+            <button type="button" class="btn-primary" id="btn-create-online-game" style="width:100%;">
+              🌐 Créer une partie en ligne
+            </button>
+            <div class="status" id="create-status"></div>
+
+            <div id="created-game-info" class="status-muted hidden" style="margin-top:4px;"></div>
+            <div id="created-game-actions" class="inline-row hidden" style="margin-top:4px;">
+              <span class="small-text">
+                Code : <code id="created-game-code" style="font-weight:700;"></code>
+              </span>
+              <button type="button" class="btn-ghost btn-small" id="btn-copy-room">
+                Copier
+              </button>
+              <button type="button" class="btn-primary btn-small" id="btn-go-to-game">
+                Aller au plateau
+              </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section-title">Rejoindre une partie en ligne</div>
+            <div class="field">
+              <label for="join-code-input">Code de la partie</label>
+              <input type="text" id="join-code-input" placeholder="Ex : AB12CD" />
+            </div>
+            <div class="inline-row">
+              <button type="button" class="btn-ghost btn-small" id="btn-join-game">
+                🔑 Rejoindre
+              </button>
+              <span class="small-text">
+                Tu dois d'abord être inscrit / connecté.
+              </span>
+            </div>
+            <div class="status" id="join-status"></div>
+          </section>
+
+          <!-- COLONNE 2 : MES PARTIES EN COURS -->
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Mes parties en cours</h2>
+              <span class="pill" id="games-count-pill">0 partie</span>
+            </div>
+            <p class="small-text">
+              Parties en ligne où tu es inscrit. Rejoins rapidement, vois à qui c'est de jouer et supprime les salles que tu n'utilises plus.
+            </p>
+            <div id="games-list" class="games-list">
+              <span class="small-text">
+                Aucune partie en cours pour le moment.
+              </span>
+            </div>
+          </section>
+
+          <!-- COLONNE 3 : MES AMIS -->
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Mes amis</h2>
+              <span class="pill" id="friends-count-pill">0 ami</span>
+            </div>
+            <p class="small-text">
+              Recherche des joueurs par pseudo, ajoute-les et invite-les quand ils sont en ligne.
+            </p>
+
+            <div class="field">
+              <label for="friend-search-input">Rechercher un joueur (pseudo)</label>
+              <div class="input-row">
+                <input type="text" id="friend-search-input" placeholder="Ex : ZergMaster" />
+                <button type="button" class="btn-ghost btn-small" id="btn-search-friend">
+                  🔍 Rechercher
+                </button>
+              </div>
+            </div>
+            <div class="error" id="friend-search-error"></div>
+
+            <div class="search-results" id="friend-search-results"></div>
+
+            <div class="divider"></div>
+
+            <div class="section-title">Liste de mes amis</div>
+            <div id="friends-list" class="friends-list">
+              <span class="small-text">
+                Tu n'as pas encore d'amis. Recherche un pseudo pour commencer.
+              </span>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    /************************************************************
+     * FIREBASE
+     ************************************************************/
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHj4uu6zCqVJIyzXCH3u5LWQQ88sfxLKs",
+      authDomain: "parasite-c66b1.firebaseapp.com",
+      projectId: "parasite-c66b1",
+      storageBucket: "parasite-c66b1.firebasestorage.app",
+      messagingSenderId: "944195028940",
+      appId: "1:944195028940:web:43da8df1acdf4d6d567f69",
+      measurementId: "G-QV1GLRX5MH"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    /************************************************************
+     * DOM
+     ************************************************************/
+    const authWrapper   = document.getElementById("auth-wrapper");
+    const authCard      = document.getElementById("auth-card");
+    const appCard       = document.getElementById("app-card");
+
+    const authEmail     = document.getElementById("auth-email");
+    const authPassword  = document.getElementById("auth-password");
+    const authPseudo    = document.getElementById("auth-pseudo");
+    const authError     = document.getElementById("auth-error");
+    const togglePwdBtn  = document.getElementById("toggle-password");
+
+    const authSubmitBtn = document.getElementById("auth-submit");
+    const toggleText    = document.getElementById("toggle-text");
+    const toggleModeBtn = document.getElementById("toggle-mode-btn");
+    const pseudoField   = document.getElementById("pseudo-field");
+
+    const welcomeText   = document.getElementById("welcome-text");
+    const authStatusLabel = document.getElementById("auth-status-label");
+    const topUserInfoEl   = document.getElementById("top-user-info");
+
+    const nameHint        = document.getElementById("name-hint");
+
+    const btnLocalGame    = document.getElementById("btn-local-game");
+    const btnCreateOnline = document.getElementById("btn-create-online-game");
+    const btnJoinGame     = document.getElementById("btn-join-game");
+    const btnLogout       = document.getElementById("btn-logout");
+    const btnStats        = document.getElementById("btn-stats");
+
+    const navPlay         = document.getElementById("nav-play");
+    const navStats        = document.getElementById("nav-stats");
+    const navHistory      = document.getElementById("nav-history");
+
+    const createStatus    = document.getElementById("create-status");
+    const joinStatus      = document.getElementById("join-status");
+    const joinCodeInput   = document.getElementById("join-code-input");
+    const createMaxPlayersInput = document.getElementById("create-max-players");
+
+    const createdGameInfo    = document.getElementById("created-game-info");
+    const createdGameActions = document.getElementById("created-game-actions");
+    const createdGameCodeEl  = document.getElementById("created-game-code");
+    const btnCopyRoom        = document.getElementById("btn-copy-room");
+    const btnGoToGame        = document.getElementById("btn-go-to-game");
+
+    const gamesListEl     = document.getElementById("games-list");
+    const gamesCountPill  = document.getElementById("games-count-pill");
+
+    const friendSearchInput   = document.getElementById("friend-search-input");
+    const friendSearchBtn     = document.getElementById("btn-search-friend");
+    const friendSearchError   = document.getElementById("friend-search-error");
+    const friendSearchResults = document.getElementById("friend-search-results");
+    const friendsListEl       = document.getElementById("friends-list");
+    const friendsCountPill    = document.getElementById("friends-count-pill");
+
+    const themeToggleBtn   = document.getElementById("theme-toggle-btn");
+    const themeToggleLabel = document.getElementById("theme-toggle-label");
+
+    let lastCreatedCode   = null;
+    let authMode = "signup"; // "signup" ou "login"
+    let currentUser = null;
+    let presenceInterval = null;
+    let handledInvitationIds = new Set();
+
+    /************************************************************
+     * THEME
+     ************************************************************/
+    function applyTheme(theme) {
+      const body = document.body;
+      if (theme === "light") {
+        body.classList.remove("theme-dark");
+        body.classList.add("theme-light");
+        themeToggleLabel.textContent = "Mode clair";
+        themeToggleBtn.querySelector(".icon").textContent = "☀️";
+      } else {
+        body.classList.remove("theme-light");
+        body.classList.add("theme-dark");
+        themeToggleLabel.textContent = "Mode sombre";
+        themeToggleBtn.querySelector(".icon").textContent = "🌙";
+      }
+      localStorage.setItem("parasite_theme", theme);
+    }
+
+    function initTheme() {
+      const stored = localStorage.getItem("parasite_theme");
+      applyTheme(stored === "light" ? "light" : "dark");
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      const current = document.body.classList.contains("theme-light") ? "light" : "dark";
+      applyTheme(current === "light" ? "dark" : "light");
+    });
+
+    initTheme();
+
+    /************************************************************
+     * NAV
+     ************************************************************/
+    if (navPlay) {
+      navPlay.addEventListener("click", () => {
+        // On est déjà sur home, rien à faire
+      });
+    }
+
+    if (navStats) {
+      navStats.addEventListener("click", () => {
+        window.location.href = "stats.html";
+      });
+    }
+
+    if (navHistory) {
+      navHistory.addEventListener("click", () => {
+        window.location.href = "history.html";
+      });
+    }
+
+    if (btnStats) {
+      btnStats.addEventListener("click", () => {
+        window.location.href = "stats.html";
+      });
+    }
+
+    /************************************************************
+     * AUTH UI
+     ************************************************************/
+    function updateAuthModeUI() {
+      if (authMode === "signup") {
+        authSubmitBtn.textContent = "S'inscrire";
+        toggleText.textContent = "Tu as déjà un compte ?";
+        toggleModeBtn.textContent = "Se connecter";
+        pseudoField.classList.remove("hidden");
+      } else {
+        authSubmitBtn.textContent = "Se connecter";
+        toggleText.textContent = "Pas encore de compte ?";
+        toggleModeBtn.textContent = "Créer un compte";
+        pseudoField.classList.add("hidden");
+      }
+    }
+
+    toggleModeBtn.addEventListener("click", () => {
+      authMode = authMode === "signup" ? "login" : "signup";
+      authError.textContent = "";
+      updateAuthModeUI();
+    });
+
+    togglePwdBtn.addEventListener("click", () => {
+      authPassword.type = (authPassword.type === "password") ? "text" : "password";
+    });
+
+    updateAuthModeUI();
+
+    /************************************************************
+     * AUTH
+     ************************************************************/
+    authSubmitBtn.addEventListener("click", async () => {
+      authError.textContent = "";
+      const email = authEmail.value.trim();
+      const pwd   = authPassword.value.trim();
+      const pseudo= authPseudo.value.trim();
+
+      if (!email || !pwd) {
+        authError.textContent = "Email et mot de passe sont obligatoires.";
+        return;
+      }
+
+      authSubmitBtn.disabled = true;
+
+      try {
+        if (authMode === "signup") {
+          if (!pseudo) {
+            authError.textContent = "Merci de choisir un pseudo.";
+            authSubmitBtn.disabled = false;
+            return;
+          }
+
+          const cred = await auth.createUserWithEmailAndPassword(email, pwd);
+          await cred.user.updateProfile({ displayName: pseudo });
+
+          await db.collection("users").doc(cred.user.uid).set({
+            uid: cred.user.uid,
+            email,
+            displayName: pseudo,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          localStorage.setItem("parasite_player_name", pseudo);
+
+        } else {
+          await auth.signInWithEmailAndPassword(email, pwd);
+        }
+      } catch (err) {
+        console.error(err);
+        authError.textContent = err.message;
+      } finally {
+        authSubmitBtn.disabled = false;
+      }
+    });
+
+    if (btnLogout) {
+      btnLogout.addEventListener("click", () => {
+        auth.signOut();
+      });
+    }
+
+    /************************************************************
+     * UTIL : NOM
+     ************************************************************/
+    function getCurrentPlayerNameFallback(user) {
+      const local = localStorage.getItem("parasite_player_name");
+      if (local && local.trim() !== "") return local.trim();
+      return user.displayName || user.email || "Joueur";
+    }
+
+    /************************************************************
+     * PRÉSENCE (ONLINE/OFFLINE)
+     ************************************************************/
+    async function startPresence(user) {
+      const userRef = db.collection("users").doc(user.uid);
+
+      await userRef.set({
+        online: true,
+        lastActive: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      if (presenceInterval) clearInterval(presenceInterval);
+      presenceInterval = setInterval(() => {
+        userRef.update({
+          online: true,
+          lastActive: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(() => {});
+      }, 30000);
+
+      window.addEventListener("beforeunload", () => {
+        userRef.update({ online: false }).catch(() => {});
+      });
+    }
+
+    function subscribeToFriendPresence(uid) {
+      db.collection("users").doc(uid).onSnapshot(snap => {
+        if (!snap.exists) return;
+        const data = snap.data() || {};
+        const online = !!data.online;
+
+        const dot   = document.getElementById("friend-status-dot-" + uid);
+        const label = document.getElementById("friend-status-label-" + uid);
+        const btn   = friendsListEl.querySelector(`button[data-friend-uid="${uid}"]`);
+
+        if (dot) {
+          dot.classList.toggle("online", online);
+          dot.classList.toggle("offline", !online);
+        }
+        if (label) {
+          label.textContent = online ? "En ligne" : "Hors ligne";
+        }
+        if (btn) {
+          btn.disabled = !online;
+        }
+      });
+    }
+
+    /************************************************************
+     * INVITATIONS
+     ************************************************************/
+    function listenToInvitations(user) {
+      const invRef = db
+        .collection("users")
+        .doc(user.uid)
+        .collection("invitations")
+        .where("status", "==", "pending")
+        .orderBy("createdAt", "desc")
+        .limit(20);
+
+      invRef.onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+          if (change.type === "added") {
+            const doc = change.doc;
+            const data = doc.data();
+            const id   = doc.id;
+
+            if (handledInvitationIds.has(id)) return;
+            handledInvitationIds.add(id);
+
+            const fromName = data.fromName || "Un joueur";
+            const roomCode = data.roomCode || "";
+
+            let msg = `${fromName} t'invite à jouer`;
+            if (roomCode) msg += ` dans la salle ${roomCode}`;
+            msg += ".\n\nVeux-tu rejoindre la partie ?";
+
+            const accept = confirm(msg);
+
+            if (accept) {
+              doc.ref.update({ status: "accepted" }).catch(() => {});
+              if (roomCode) {
+                window.location.href = `game.html?room=${roomCode}`;
+              }
+            } else {
+              doc.ref.update({ status: "declined" }).catch(() => {});
+            }
+          }
+        });
+      });
+    }
+
+    /************************************************************
+     * JEU : LOCAL & EN LIGNE
+     ************************************************************/
+    if (btnLocalGame) {
+      btnLocalGame.addEventListener("click", () => {
+        const user = auth.currentUser;
+        if (!user) {
+          alert("Tu dois être connecté pour jouer.");
+          return;
+        }
+        const name = getCurrentPlayerNameFallback(user);
+        localStorage.setItem("parasite_player_name", name);
+        window.location.href = "game.html?local=true";
+      });
+    }
+
+    if (btnCreateOnline) {
+      btnCreateOnline.addEventListener("click", async () => {
+        const user = auth.currentUser;
+        if (!user) {
+          alert("Tu dois être connecté pour créer une partie.");
+          return;
+        }
+
+        let maxPlayers = parseInt(createMaxPlayersInput.value, 10);
+        if (isNaN(maxPlayers) || maxPlayers < 2 || maxPlayers > 6) {
+          maxPlayers = 2;
+        }
+
+        btnCreateOnline.disabled = true;
+        createStatus.textContent = "Création de la partie en cours...";
+        createdGameInfo.classList.add("hidden");
+        createdGameActions.classList.add("hidden");
+
+        try {
+          const name = getCurrentPlayerNameFallback(user);
+          localStorage.setItem("parasite_player_name", name);
+
+          const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+          await db.collection("games").doc(code).set({
+            code: code,
+            createdBy: user.uid,
+            maxPlayers: maxPlayers,
+            status: "waiting",
+            playerIds: [user.uid],
+            playerNamesById: {
+              [user.uid]: name
+            },
+            boardSize: 20,
+            numPlayers: maxPlayers,
+            phase: "CONFIG",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          lastCreatedCode = code;
+          createStatus.textContent = "Partie créée avec succès !";
+          createdGameCodeEl.textContent = code;
+          createdGameInfo.textContent = "Donne ce code à tes amis pour qu'ils rejoignent la partie :";
+          createdGameInfo.classList.remove("hidden");
+          createdGameActions.classList.remove("hidden");
+
+          loadUserGames();
+        } catch (err) {
+          console.error(err);
+          createStatus.textContent = "Erreur lors de la création de la partie.";
+          alert(err.message);
+        } finally {
+          btnCreateOnline.disabled = false;
+        }
+      });
+    }
+
+    if (btnCopyRoom) {
+      btnCopyRoom.addEventListener("click", async () => {
+        if (!lastCreatedCode) return;
+        try {
+          await navigator.clipboard.writeText(lastCreatedCode);
+          btnCopyRoom.textContent = "Copié !";
+          setTimeout(() => (btnCopyRoom.textContent = "Copier"), 1500);
+        } catch (e) {
+          alert("Impossible de copier automatiquement, copie-le à la main : " + lastCreatedCode);
+        }
+      });
+    }
+
+    if (btnGoToGame) {
+      btnGoToGame.addEventListener("click", () => {
+        if (!lastCreatedCode) return;
+        window.location.href = `game.html?room=${lastCreatedCode}`;
+      });
+    }
+
+    if (btnJoinGame) {
+      btnJoinGame.addEventListener("click", async () => {
+        const user = auth.currentUser;
+        if (!user) {
+          alert("Tu dois être connecté pour rejoindre une partie.");
+          return;
+        }
+
+        const rawCode = joinCodeInput.value.trim().toUpperCase();
+        if (!rawCode) {
+          joinStatus.textContent = "Merci d'entrer un code.";
+          return;
+        }
+
+        btnJoinGame.disabled = true;
+        joinStatus.textContent = "Recherche de la partie...";
+
+        try {
+          const ref = db.collection("games").doc(rawCode);
+          const docSnap = await ref.get();
+
+          if (!docSnap.exists) {
+            joinStatus.textContent = "Aucune partie trouvée avec ce code.";
+            btnJoinGame.disabled = false;
+            return;
+          }
+
+          const data = docSnap.data();
+
+          if (Array.isArray(data.playerIds) && data.maxPlayers && data.playerIds.length >= data.maxPlayers) {
+            joinStatus.textContent = "La partie est déjà pleine.";
+            btnJoinGame.disabled = false;
+            return;
+          }
+
+          const name = getCurrentPlayerNameFallback(user);
+          localStorage.setItem("parasite_player_name", name);
+
+          await ref.update({
+            playerIds: firebase.firestore.FieldValue.arrayUnion(user.uid),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          await ref.set({
+            playerNamesById: {
+              [user.uid]: name
+            }
+          }, { merge: true });
+
+          joinStatus.textContent = "Partie trouvée, redirection...";
+          window.location.href = `game.html?room=${rawCode}`;
+        } catch (err) {
+          console.error(err);
+          joinStatus.textContent = "Erreur lors de la connexion à la partie.";
+          alert(err.message);
+        } finally {
+          btnJoinGame.disabled = false;
+        }
+      });
+    }
+
+    /************************************************************
+     * MES PARTIES EN COURS – version stable
+     ************************************************************/
+    async function loadUserGames() {
+      const user = auth.currentUser;
+      if (!user || !gamesListEl) return;
+
+      gamesListEl.innerHTML = `<span class="small-text">Chargement...</span>`;
+
+      try {
+        const snap = await db.collection("games")
+          .where("playerIds", "array-contains", user.uid)
+          .limit(50)
+          .get();
+
+        if (snap.empty) {
+          gamesListEl.innerHTML = `<span class="small-text">Aucune partie en cours pour le moment.</span>`;
+          gamesCountPill.textContent = "0 partie";
+          return;
+        }
+
+        const docs = snap.docs.slice().sort((a, b) => {
+          const da = a.data();
+          const dbb = b.data();
+          const ta = da.updatedAt ? da.updatedAt.toMillis() : 0;
+          const tb = dbb.updatedAt ? dbb.updatedAt.toMillis() : 0;
+          return tb - ta;
+        });
+
+        gamesListEl.innerHTML = "";
+        const count = docs.length;
+        gamesCountPill.textContent = count + (count > 1 ? " parties" : " partie");
+
+        docs.forEach(docSnap => {
+          const data = docSnap.data();
+          const code = data.code || docSnap.id;
+          const status = data.status || "unknown";
+          const maxPlayers = data.maxPlayers || (data.playerIds ? data.playerIds.length : 2);
+          const playerIds  = data.playerIds || [];
+          const namesById  = data.playerNamesById || {};
+          const currentIndex = typeof data.currentPlayerIndex === "number" ? data.currentPlayerIndex : 0;
+
+          const createdBy   = data.createdBy || null;
+          const isCreator   = (createdBy === user.uid);
+
+          const playersNames = playerIds.map(uid => namesById[uid] || uid.slice(0, 5)).join(", ");
+
+          let turnInfo = "";
+          if (Array.isArray(playerIds) && playerIds.length > 0) {
+            const activeUid = playerIds[currentIndex % playerIds.length];
+            const activeName = namesById[activeUid] || activeUid.slice(0,5);
+            turnInfo = `À ${activeName} de jouer`;
+          } else {
+            turnInfo = "En attente de joueurs";
+          }
+
+          const row = document.createElement("div");
+          row.className = "item-row";
+          row.innerHTML = `
+            <div class="item-main">
+              <div class="item-title">Salle ${code}</div>
+              <div class="item-sub">
+                ${status === "waiting" ? "En attente" : "En cours"} – ${playerIds.length}/${maxPlayers} joueurs<br/>
+                <span class="small-text">${turnInfo}</span><br/>
+                <span class="small-text">Joueurs : ${playersNames || "?"}</span>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button type="button" class="btn-ghost btn-small" data-join-code="${code}">
+                Rejoindre
+              </button>
+              <button type="button" class="icon-btn danger" data-delete-code="${code}" ${isCreator ? "" : "disabled"}>
+                🗑
+              </button>
+            </div>
+          `;
+          gamesListEl.appendChild(row);
+        });
+
+        gamesListEl.querySelectorAll("button[data-join-code]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const c = btn.getAttribute("data-join-code");
+            window.location.href = `game.html?room=${c}`;
+          });
+        });
+
+        gamesListEl.querySelectorAll("button[data-delete-code]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const code = btn.getAttribute("data-delete-code");
+            if (!code || btn.disabled) return;
+            if (!confirm("Supprimer cette salle ?")) return;
+            try {
+              const ref = db.collection("games").doc(code);
+              const snapGame = await ref.get();
+              if (snapGame.exists) {
+                const data = snapGame.data();
+                if (data.createdBy === user.uid) {
+                  await ref.delete();
+                  loadUserGames();
+                } else {
+                  alert("Tu n'es pas le créateur de cette salle.");
+                }
+              }
+            } catch (e) {
+              console.error(e);
+              alert("Erreur lors de la suppression de la salle.");
+            }
+          });
+        });
+
+      } catch (e) {
+        console.error(e);
+        gamesListEl.innerHTML = `<span class="small-text">Erreur lors du chargement des parties.</span>`;
+        gamesCountPill.textContent = "0 partie";
+      }
+    }
+
+    /************************************************************
+     * AMIS
+     ************************************************************/
+    async function loadFriends() {
+      const user = auth.currentUser;
+      if (!user || !friendsListEl) return;
+
+      friendsListEl.innerHTML = `<span class="small-text">Chargement...</span>`;
+      friendsCountPill.textContent = "0 ami";
+
+      try {
+        const friendsSnap = await db
+          .collection("users")
+          .doc(user.uid)
+          .collection("friends")
+          .get();
+
+        if (friendsSnap.empty) {
+          friendsListEl.innerHTML = `<span class="small-text">Tu n'as pas encore d'amis. Recherche un pseudo pour commencer.</span>`;
+          friendsCountPill.textContent = "0 ami";
+          return;
+        }
+
+        const friendUids = friendsSnap.docs.map(d => d.id);
+        const userDocs = await Promise.all(
+          friendUids.map(uid => db.collection("users").doc(uid).get())
+        );
+
+        friendsListEl.innerHTML = "";
+        friendsCountPill.textContent = friendUids.length + (friendUids.length > 1 ? " amis" : " ami");
+
+        userDocs.forEach((snap, index) => {
+          const uid = friendUids[index];
+          if (!snap.exists) return;
+          const data = snap.data();
+          const name = data.displayName || data.email || `Joueur ${uid.slice(0, 5)}`;
+          const online = !!data.online;
+
+          const row = document.createElement("div");
+          row.className = "item-row";
+          row.setAttribute("data-friend-uid", uid);
+
+          row.innerHTML = `
+            <div class="item-main">
+              <div class="item-title">${name}</div>
+              <div class="status-line">
+                <span class="status-dot ${online ? "online" : "offline"}" id="friend-status-dot-${uid}"></span>
+                <span class="small-text" id="friend-status-label-${uid}">
+                  ${online ? "En ligne" : "Hors ligne"}
+                </span>
+              </div>
+              <div class="item-sub small-text">Ami Parasite – invite-le pour une partie 1v1.</div>
+            </div>
+            <div class="item-actions">
+              <button type="button" class="btn-ghost btn-small" data-friend-uid="${uid}" data-friend-name="${name}" ${online ? "" : "disabled"}>
+                Inviter à jouer
+              </button>
+            </div>
+          `;
+          friendsListEl.appendChild(row);
+        });
+
+        friendsListEl.querySelectorAll("button[data-friend-uid]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const fid  = btn.getAttribute("data-friend-uid");
+            const name = btn.getAttribute("data-friend-name");
+            createOnlineGameWithFriend(fid, name);
+          });
+        });
+
+        friendUids.forEach(uid => {
+          subscribeToFriendPresence(uid);
+        });
+      } catch (e) {
+        console.error(e);
+        friendsListEl.innerHTML = `<span class="small-text">Erreur lors du chargement des amis.</span>`;
+        friendsCountPill.textContent = "0 ami";
+      }
+    }
+
+    async function createOnlineGameWithFriend(friendUid, friendName) {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Tu dois être connecté pour créer une partie.");
+        return;
+      }
+
+      try {
+        const nameMe = localStorage.getItem("parasite_player_name") ||
+          user.displayName || user.email || "Moi";
+
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const gameRef = db.collection("games").doc(code);
+
+        await gameRef.set({
+          code: code,
+          createdBy: user.uid,
+          maxPlayers: 2,
+          status: "waiting",
+          playerIds: [user.uid],
+          playerNamesById: {
+            [user.uid]: nameMe
+          },
+          invitedFriendIds: [friendUid],
+          boardSize: 20,
+          numPlayers: 2,
+          phase: "CONFIG",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        await db.collection("users")
+          .doc(friendUid)
+          .collection("invitations")
+          .add({
+            type: "play",
+            fromUid: user.uid,
+            fromName: nameMe,
+            roomCode: code,
+            status: "pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+        alert(`Invitation envoyée à ${friendName}. Code de la salle : ${code}`);
+        loadUserGames();
+      } catch (e) {
+        console.error(e);
+        alert("Erreur lors de la création de la partie avec ton ami.");
+      }
+    }
+
+    async function searchFriendByName() {
+      friendSearchError.textContent = "";
+      friendSearchResults.innerHTML = "";
+      const user = auth.currentUser;
+      if (!user) {
+        friendSearchError.textContent = "Tu dois être connecté.";
+        return;
+      }
+
+      const term = (friendSearchInput.value || "").trim();
+      if (!term) {
+        friendSearchError.textContent = "Entre un pseudo à rechercher.";
+        return;
+      }
+
+      try {
+        friendSearchResults.innerHTML = `<span class="small-text">Recherche en cours...</span>`;
+
+        let q = db.collection("users")
+          .orderBy("displayName")
+          .startAt(term)
+          .endAt(term + "\uf8ff")
+          .limit(10);
+
+        const snap = await q.get();
+
+        if (snap.empty) {
+          friendSearchResults.innerHTML = `<span class="small-text">Aucun joueur trouvé avec ce pseudo.</span>`;
+          return;
+        }
+
+        const myFriendsSnap = await db.collection("users").doc(user.uid).collection("friends").get();
+        const currentFriends = new Set(myFriendsSnap.docs.map(d => d.id));
+
+        friendSearchResults.innerHTML = "";
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const uid  = docSnap.id;
+
+          if (uid === user.uid) return;
+
+          const name = data.displayName || data.email || `Joueur ${uid.slice(0, 5)}`;
+          const isAlreadyFriend = currentFriends.has(uid);
+
+          const row = document.createElement("div");
+          row.className = "item-row";
+          row.innerHTML = `
+            <div class="item-main">
+              <div class="item-title">${name}</div>
+              <div class="item-sub small-text">${data.email || ""}</div>
+            </div>
+            <div class="item-actions">
+              ${
+                isAlreadyFriend
+                  ? '<span class="small-text">Déjà dans tes amis</span>'
+                  : `<button type="button" class="btn-primary btn-small" data-add-friend-uid="${uid}" data-add-friend-name="${name}">
+                       Ajouter
+                     </button>`
+              }
+            </div>
+          `;
+          friendSearchResults.appendChild(row);
+        });
+
+        friendSearchResults.querySelectorAll("button[data-add-friend-uid]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const uid  = btn.getAttribute("data-add-friend-uid");
+            const name = btn.getAttribute("data-add-friend-name");
+            addFriend(uid, name);
+          });
+        });
+      } catch (e) {
+        console.error(e);
+        friendSearchError.textContent = "Erreur lors de la recherche.";
+        friendSearchResults.innerHTML = "";
+      }
+    }
+
+    async function addFriend(friendUid, friendName) {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Tu dois être connecté.");
+        return;
+      }
+
+      try {
+        const myFriendsRef     = db.collection("users").doc(user.uid).collection("friends").doc(friendUid);
+        const otherFriendsRef  = db.collection("users").doc(friendUid).collection("friends").doc(user.uid);
+
+        await Promise.all([
+          myFriendsRef.set({
+            uid: friendUid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }),
+          otherFriendsRef.set({
+            uid: user.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true })
+        ]);
+
+        friendSearchError.textContent = "";
+        friendSearchResults.innerHTML = `<span class="small-text">${friendName} a été ajouté à tes amis.</span>`;
+        loadFriends();
+      } catch (e) {
+        console.error(e);
+        alert("Erreur lors de l'ajout de l'ami.");
+      }
+    }
+
+    if (friendSearchBtn) {
+      friendSearchBtn.addEventListener("click", searchFriendByName);
+    }
+
+    if (friendSearchInput) {
+      friendSearchInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          searchFriendByName();
+        }
+      });
+    }
+
+    /************************************************************
+     * AUTH STATE & INIT
+     ************************************************************/
+    auth.onAuthStateChanged(async (user) => {
+      currentUser = user || null;
+
+      if (!user) {
+        authWrapper.classList.remove("hidden");
+        authCard.classList.remove("hidden");
+        appCard.classList.add("hidden");
+        authStatusLabel.textContent = "Déconnecté";
+        welcomeText.textContent = "Connecte-toi ou crée un compte pour lancer une partie.";
+        topUserInfoEl.textContent = "Invité";
+        nameHint.textContent = "";
+        if (presenceInterval) clearInterval(presenceInterval);
+        return;
+      }
+
+      authWrapper.classList.add("hidden");
+      authCard.classList.add("hidden");
+      appCard.classList.remove("hidden");
+      authStatusLabel.textContent = "Connecté";
+
+      let displayName = user.displayName;
+      if (!displayName) {
+        const snap = await db.collection("users").doc(user.uid).get();
+        if (snap.exists) {
+          const data = snap.data();
+          displayName = data.displayName || user.email;
+        } else {
+          displayName = user.email;
+        }
+      }
+
+      welcomeText.textContent = `Salut ${displayName} 👋`;
+      topUserInfoEl.textContent = displayName || user.email || "Connecté";
+
+      const stored = localStorage.getItem("parasite_player_name");
+      if (stored && stored.trim() !== "") {
+        nameHint.textContent = `Ton pseudo en partie : ${stored.trim()}`;
+      } else {
+        const finalName = displayName || user.email || "Joueur";
+        localStorage.setItem("parasite_player_name", finalName);
+        nameHint.textContent = `Ton pseudo en partie : ${finalName}`;
+      }
+
+      await startPresence(user);
+      listenToInvitations(user);
+
+      loadUserGames();
+      loadFriends();
+    });
+  </script>
+</body>
+</html>

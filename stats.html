@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Parasite – Statistiques</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --bg-main-dark: radial-gradient(circle at top, #1b1f30 0, #080910 40%, #050509 100%);
+      --bg-header-dark: #05060c;
+      --bg-card-dark: #101425;
+      --border-card-dark: rgba(90, 100, 190, 0.8);
+      --text-main-dark: #f5f5ff;
+
+      --bg-main-light: #f4f6ff;
+      --bg-header-light: #ffffff;
+      --bg-card-light: #ffffff;
+      --border-card-light: rgba(170, 180, 230, 0.9);
+      --text-main-light: #14141f;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main-dark);
+      color: var(--text-main-dark);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    body.theme-dark {
+      background: var(--bg-main-dark);
+      color: var(--text-main-dark);
+    }
+
+    body.theme-light {
+      background: var(--bg-main-light);
+      color: var(--text-main-light);
+    }
+
+    /* TOP BAR */
+    .top-bar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--bg-header-dark);
+      border-bottom: 1px solid rgba(60, 65, 110, 0.7);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    body.theme-light .top-bar {
+      background: var(--bg-header-light);
+      border-color: rgba(175, 185, 230, 0.9);
+      box-shadow: 0 8px 24px rgba(20, 20, 80, 0.15);
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .logo-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: radial-gradient(circle at 30% 20%, #7cffd4 0, #18a58f 45%, #071f29 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: #041013;
+      box-shadow: 0 0 10px rgba(140, 255, 220, 0.7);
+    }
+
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .top-nav-item {
+      padding: 4px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      opacity: 0.85;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .top-nav-item.active {
+      background: rgba(120, 190, 255, 0.16);
+      opacity: 1;
+    }
+
+    body.theme-light .top-nav-item.active {
+      background: rgba(80, 120, 220, 0.12);
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .top-user {
+      max-width: 220px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      opacity: 0.9;
+    }
+
+    .theme-toggle {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid rgba(110, 120, 210, 0.9);
+      background: rgba(22, 26, 60, 0.92);
+      color: #e8ebff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    body.theme-light .theme-toggle {
+      background: #f4f5ff;
+      color: #22253d;
+      border-color: #c0c6ff;
+    }
+
+    .theme-toggle span.icon {
+      font-size: 13px;
+    }
+
+    /* MAIN LAYOUT */
+    .page {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 18px 18px 24px;
+    }
+
+    .page-inner {
+      width: 100%;
+      max-width: 1280px;
+    }
+
+    /* CARDS + TYPO */
+    .card {
+      border-radius: 16px;
+      padding: 16px 18px;
+      background: var(--bg-card-dark);
+      border: 1px solid var(--border-card-dark);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    body.theme-light .card {
+      background: var(--bg-card-light);
+      border-color: var(--border-card-light);
+      box-shadow: 0 14px 32px rgba(20, 20, 80, 0.18);
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    h1 { font-size: 20px; }
+    h2 { font-size: 15px; }
+    h3 { font-size: 13px; }
+
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    .small-text {
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(110, 120, 210, 0.8);
+      background: rgba(36, 40, 80, 0.9);
+      color: #d1d5ff;
+    }
+
+    body.theme-light .tag {
+      background: rgba(210, 216, 255, 0.7);
+      color: #202440;
+    }
+
+    .divider {
+      height: 1px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, #44487a, transparent);
+      margin: 10px 0;
+    }
+
+    body.theme-light .divider {
+      background: linear-gradient(90deg, transparent, #c0c4ff, transparent);
+    }
+
+    .grid-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .grid-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .grid-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-tile {
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: radial-gradient(circle at top left, rgba(60, 90, 190, 0.22) 0, rgba(8, 10, 24, 0.96) 40%, #05060c 100%);
+      border: 1px solid rgba(90, 100, 180, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    body.theme-light .stat-tile {
+      background: linear-gradient(145deg, #ffffff, #f0f2ff);
+      border-color: rgba(170, 180, 230, 0.95);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    .stat-value {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .stat-sublabel {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      padding: 6px 4px;
+      border-bottom: 1px solid rgba(70, 74, 130, 0.8);
+      text-align: left;
+    }
+
+    th {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.9;
+    }
+
+    body.theme-light th, body.theme-light td {
+      border-color: #c0c6ff;
+    }
+
+    .badge-result {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+    }
+
+    .badge-win {
+      background: rgba(76, 175, 80, 0.15);
+      color: #b9f6ca;
+      border: 1px solid rgba(76, 175, 80, 0.7);
+    }
+
+    .badge-loss {
+      background: rgba(244, 67, 54, 0.15);
+      color: #ffcccb;
+      border: 1px solid rgba(244, 67, 54, 0.7);
+    }
+
+    .badge-draw {
+      background: rgba(255, 215, 64, 0.15);
+      color: #fff9c4;
+      border: 1px solid rgba(255, 215, 64, 0.7);
+    }
+
+    .centered {
+      text-align: center;
+    }
+
+    button {
+      font-family: inherit;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 7px 12px;
+      transition: transform 0.08s, box-shadow 0.08s, background 0.12s, border-color 0.12s, opacity 0.12s;
+    }
+
+    .btn-ghost {
+      background: rgba(18, 18, 40, 0.95);
+      color: #d0d4ff;
+      border: 1px solid #4b4d8d;
+    }
+
+    body.theme-light .btn-ghost {
+      background: #f5f6ff;
+      color: #2a2e55;
+      border-color: #c0c6ff;
+    }
+
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.6);
+    }
+
+    .empty-state {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px dashed rgba(90, 100, 180, 0.8);
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    body.theme-light .empty-state {
+      border-color: #c0c6ff;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="top-left">
+      <div class="logo">
+        <div class="logo-icon">🦠</div>
+        <span>PARASITE</span>
+      </div>
+      <nav class="top-nav">
+        <div class="top-nav-item" id="nav-play">Jouer</div>
+        <div class="top-nav-item active" id="nav-stats">Statistiques</div>
+        <div class="top-nav-item" id="nav-history">Historique</div>
+      </nav>
+    </div>
+    <div class="top-right">
+      <div class="top-user" id="top-user-info">Invité</div>
+      <button type="button" id="theme-toggle-btn" class="theme-toggle">
+        <span class="icon">🌙</span><span id="theme-toggle-label">Mode sombre</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-inner">
+      <section class="card" id="stats-card">
+        <div class="header-row">
+          <div>
+            <h1>Mes statistiques</h1>
+            <p class="subtitle" id="stats-subtitle">
+              Chargement des statistiques...
+            </p>
+          </div>
+          <div class="tag" id="tag-games-summary">
+            0 partie enregistrée
+          </div>
+        </div>
+
+        <div id="not-logged" class="centered" style="display:none;">
+          <p class="subtitle">
+            Tu dois être connecté pour voir tes statistiques.
+          </p>
+          <button type="button" class="btn-ghost" id="btn-go-home">
+            ⬅ Retour à Jouer
+          </button>
+        </div>
+
+        <div id="stats-content" style="display:none;">
+          <div class="divider"></div>
+
+          <!-- Tuiles principales -->
+          <div class="grid-stats">
+            <div class="stat-tile">
+              <div class="stat-label">Parties jouées</div>
+              <div class="stat-value" id="stat-total-games">0</div>
+              <div class="stat-sublabel" id="stat-total-games-sub">Total toutes variantes</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-label">Taux de victoire</div>
+              <div class="stat-value" id="stat-winrate">0%</div>
+              <div class="stat-sublabel" id="stat-winrate-sub">Victoires / parties terminées</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-label">Série actuelle</div>
+              <div class="stat-value" id="stat-streak">-</div>
+              <div class="stat-sublabel" id="stat-streak-sub">Victoires / défaites d'affilée</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-label">Dernière partie</div>
+              <div class="stat-value" id="stat-last-result">-</div>
+              <div class="stat-sublabel" id="stat-last-date">-</div>
+            </div>
+          </div>
+
+          <div class="columns">
+            <!-- COL 1 : adversaires -->
+            <div>
+              <h2>Adversaires favoris</h2>
+              <p class="small-text">
+                Joueurs contre qui tu as le plus joué, et ton taux de victoire contre eux.
+              </p>
+              <div id="opponents-block">
+                <div class="empty-state" id="opponents-empty">
+                  Pas encore assez de parties pour afficher des statistiques d'adversaires.
+                </div>
+                <table id="opponents-table" style="display:none;">
+                  <thead>
+                    <tr>
+                      <th>Adversaire</th>
+                      <th>Jouées</th>
+                      <th>Victoires</th>
+                      <th>Taux</th>
+                    </tr>
+                  </thead>
+                  <tbody id="opponents-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- COL 2 : résumé rapide -->
+            <div>
+              <h2>Résumé rapide</h2>
+              <p class="small-text" id="summary-text">
+                Analyse de tes dernières parties.
+              </p>
+
+              <div class="divider"></div>
+
+              <h3>Répartition des résultats</h3>
+              <p class="small-text" id="distribution-text">-</p>
+
+              <div class="divider"></div>
+
+              <h3>Meilleure cible</h3>
+              <p class="small-text" id="best-opponent-text">
+                -
+              </p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <p class="small-text">
+            Pour voir le détail partie par partie, utilise l'onglet <b>Historique</b> dans la barre du haut.
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    /************************************************************
+     * FIREBASE
+     ************************************************************/
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHj4uu6zCqVJIyzXCH3u5LWQQ88sfxLKs",
+      authDomain: "parasite-c66b1.firebaseapp.com",
+      projectId: "parasite-c66b1",
+      storageBucket: "parasite-c66b1.firebasestorage.app",
+      messagingSenderId: "944195028940",
+      appId: "1:944195028940:web:43da8df1acdf4d6d567f69",
+      measurementId: "G-QV1GLRX5MH"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    /************************************************************
+     * DOM
+     ************************************************************/
+    const topUserInfoEl       = document.getElementById("top-user-info");
+    const themeToggleBtn      = document.getElementById("theme-toggle-btn");
+    const themeToggleLabel    = document.getElementById("theme-toggle-label");
+    const navPlay             = document.getElementById("nav-play");
+    const navStats            = document.getElementById("nav-stats");
+    const navHistory          = document.getElementById("nav-history");
+
+    const notLoggedSection    = document.getElementById("not-logged");
+    const btnGoHome           = document.getElementById("btn-go-home");
+    const statsContent        = document.getElementById("stats-content");
+    const statsSubtitle       = document.getElementById("stats-subtitle");
+    const tagGamesSummary     = document.getElementById("tag-games-summary");
+
+    const statTotalGamesEl    = document.getElementById("stat-total-games");
+    const statTotalGamesSubEl = document.getElementById("stat-total-games-sub");
+    const statWinrateEl       = document.getElementById("stat-winrate");
+    const statWinrateSubEl    = document.getElementById("stat-winrate-sub");
+    const statStreakEl        = document.getElementById("stat-streak");
+    const statStreakSubEl     = document.getElementById("stat-streak-sub");
+    const statLastResultEl    = document.getElementById("stat-last-result");
+    const statLastDateEl      = document.getElementById("stat-last-date");
+
+    const opponentsEmptyEl    = document.getElementById("opponents-empty");
+    const opponentsTable      = document.getElementById("opponents-table");
+    const opponentsTbody      = document.getElementById("opponents-tbody");
+
+    const summaryTextEl       = document.getElementById("summary-text");
+    const distributionTextEl  = document.getElementById("distribution-text");
+    const bestOpponentTextEl  = document.getElementById("best-opponent-text");
+
+    /************************************************************
+     * THEME (synchro avec home)
+     ************************************************************/
+    function applyTheme(theme) {
+      const body = document.body;
+      if (theme === "light") {
+        body.classList.remove("theme-dark");
+        body.classList.add("theme-light");
+        themeToggleLabel.textContent = "Mode clair";
+        themeToggleBtn.querySelector(".icon").textContent = "☀️";
+      } else {
+        body.classList.remove("theme-light");
+        body.classList.add("theme-dark");
+        themeToggleLabel.textContent = "Mode sombre";
+        themeToggleBtn.querySelector(".icon").textContent = "🌙";
+      }
+      localStorage.setItem("parasite_theme", theme);
+    }
+
+    function initTheme() {
+      const stored = localStorage.getItem("parasite_theme");
+      applyTheme(stored === "light" ? "light" : "dark");
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      const current = document.body.classList.contains("theme-light") ? "light" : "dark";
+      applyTheme(current === "light" ? "dark" : "light");
+    });
+
+    initTheme();
+
+    /************************************************************
+     * NAVIGATION
+     ************************************************************/
+    if (navPlay) {
+      navPlay.addEventListener("click", () => {
+        window.location.href = "home.html";
+      });
+    }
+
+    if (navStats) {
+      navStats.addEventListener("click", () => {
+        // On est déjà sur la page stats, rien à faire
+      });
+    }
+
+    if (navHistory) {
+      navHistory.addEventListener("click", () => {
+        window.location.href = "history.html";
+      });
+    }
+
+    if (btnGoHome) {
+      btnGoHome.addEventListener("click", () => {
+        window.location.href = "home.html";
+      });
+    }
+
+    /************************************************************
+     * UTIL
+     ************************************************************/
+    function formatDate(ts) {
+      if (!ts) return "-";
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function percent(win, total) {
+      if (!total) return 0;
+      return Math.round((win / total) * 100);
+    }
+
+    /************************************************************
+     * CHARGEMENT DES STATS
+     * On suppose des documents dans users/{uid}/history avec :
+     *  - result: "win" | "loss" | "draw"
+     *  - opponentName?: string
+     *  - createdAt: Timestamp
+     ************************************************************/
+    async function loadStatsForUser(user) {
+      try {
+        statsSubtitle.textContent = "Chargement des statistiques...";
+        tagGamesSummary.textContent = "Chargement...";
+
+        const histRef = db
+          .collection("users")
+          .doc(user.uid)
+          .collection("history")
+          .orderBy("createdAt", "desc")
+          .limit(200);
+
+        const snap = await histRef.get();
+
+        if (snap.empty) {
+          statsSubtitle.textContent = "Pas encore de parties enregistrées.";
+          tagGamesSummary.textContent = "0 partie";
+          statsContent.style.display = "block";
+          return {
+            total: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            lastGame: null,
+            lastResult: null,
+            streak: 0,
+            streakType: null,
+            opponents: {}
+          };
+        }
+
+        const games = [];
+        snap.forEach(doc => {
+          games.push({ id: doc.id, ...doc.data() });
+        });
+
+        const total = games.length;
+        let wins = 0, losses = 0, draws = 0;
+
+        const opponentsMap = {};
+        for (const g of games) {
+          if (g.result === "win") wins++;
+          else if (g.result === "loss") losses++;
+          else draws++;
+
+          const name = g.opponentName || "Inconnu";
+          if (!opponentsMap[name]) {
+            opponentsMap[name] = { total: 0, wins: 0, losses: 0, draws: 0 };
+          }
+          opponentsMap[name].total++;
+          if (g.result === "win") opponentsMap[name].wins++;
+          else if (g.result === "loss") opponentsMap[name].losses++;
+          else opponentsMap[name].draws++;
+        }
+
+        // Streak
+        let streak = 0;
+        let streakType = null; // "win" | "loss"
+        for (const g of games) {
+          if (!streakType) {
+            if (g.result === "win") {
+              streakType = "win";
+              streak = 1;
+            } else if (g.result === "loss") {
+              streakType = "loss";
+              streak = 1;
+            } else {
+              // draw ne commence pas une streak
+            }
+          } else {
+            if (g.result === streakType) {
+              streak++;
+            } else if (g.result === "draw") {
+              // on ignore les draws pour la streak
+            } else {
+              break;
+            }
+          }
+        }
+
+        const last = games[0];
+        const lastResult = last.result || null;
+        const lastGameDate = last.createdAt || null;
+
+        // Mise à jour UI
+        const winrate = percent(wins, total);
+
+        statTotalGamesEl.textContent = total;
+        statTotalGamesSubEl.textContent = "Total toutes parties Parasite";
+        statWinrateEl.textContent = winrate + "%";
+        statWinrateSubEl.textContent = `${wins} victoire(s) / ${total} partie(s)`;
+
+        if (streak === 0 || !streakType) {
+          statStreakEl.textContent = "-";
+          statStreakSubEl.textContent = "Aucune série en cours";
+        } else {
+          statStreakEl.textContent = `${streak}`;
+          statStreakSubEl.textContent =
+            streakType === "win"
+              ? "Victoires d'affilée"
+              : "Défaites d'affilée";
+        }
+
+        if (!lastResult) {
+          statLastResultEl.textContent = "-";
+          statLastDateEl.textContent = "-";
+        } else {
+          const label =
+            lastResult === "win"
+              ? "Victoire"
+              : lastResult === "loss"
+              ? "Défaite"
+              : "Nulle";
+          statLastResultEl.textContent = label;
+          statLastDateEl.textContent = formatDate(lastGameDate);
+        }
+
+        tagGamesSummary.textContent =
+          total + (total > 1 ? " parties" : " partie") + " enregistrée" + (total > 1 ? "s" : "");
+
+        statsSubtitle.textContent = `Statistiques de ${user.displayName || user.email || "toi"}`;
+
+        // Distribution
+        distributionTextEl.textContent =
+          `${wins} victoire(s), ${losses} défaite(s), ${draws} nulle(s). Taux de victoire global : ${winrate}%.`;
+
+        // Opposants
+        const opponentNames = Object.keys(opponentsMap);
+        if (opponentNames.length === 0) {
+          opponentsEmptyEl.style.display = "block";
+          opponentsTable.style.display = "none";
+        } else {
+          opponentsEmptyEl.style.display = "none";
+          opponentsTable.style.display = "table";
+          opponentsTbody.innerHTML = "";
+
+          // tri par nombre de parties jouées desc
+          opponentNames.sort((a, b) => opponentsMap[b].total - opponentsMap[a].total);
+          opponentNames.slice(0, 10).forEach(name => {
+            const o = opponentsMap[name];
+            const row = document.createElement("tr");
+            const wr = percent(o.wins, o.total);
+            row.innerHTML = `
+              <td>${name}</td>
+              <td>${o.total}</td>
+              <td>${o.wins}</td>
+              <td>${wr}%</td>
+            `;
+            opponentsTbody.appendChild(row);
+          });
+
+          // meilleure cible = adv avec le plus de victoires
+          let bestName = null;
+          let bestWins = 0;
+          opponentNames.forEach(name => {
+            if (opponentsMap[name].wins > bestWins) {
+              bestWins = opponentsMap[name].wins;
+              bestName = name;
+            }
+          });
+
+          if (!bestName || bestWins === 0) {
+            bestOpponentTextEl.textContent =
+              "Tu n'as pas encore de joueur que tu bats régulièrement. À toi de construire ta légende 🦠";
+          } else {
+            const bestTotal = opponentsMap[bestName].total;
+            const bestRate = percent(opponentsMap[bestName].wins, bestTotal);
+            bestOpponentTextEl.textContent =
+              `Tu as battu ${bestName} ${bestWins} fois sur ${bestTotal} partie(s), soit ${bestRate}% de victoire contre lui.`;
+          }
+        }
+
+        statsContent.style.display = "block";
+
+        return {
+          total,
+          wins,
+          losses,
+          draws,
+          lastGame: last,
+          lastResult,
+          streak,
+          streakType,
+          opponents: opponentsMap
+        };
+      } catch (e) {
+        console.error(e);
+        statsSubtitle.textContent = "Erreur lors du chargement des statistiques.";
+        tagGamesSummary.textContent = "Erreur";
+        statsContent.style.display = "block";
+      }
+    }
+
+    /************************************************************
+     * AUTH STATE
+     ************************************************************/
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        topUserInfoEl.textContent = "Invité";
+        notLoggedSection.style.display = "block";
+        statsContent.style.display = "none";
+        statsSubtitle.textContent = "Connecte-toi sur la page Jouer pour voir tes statistiques.";
+        tagGamesSummary.textContent = "Non connecté";
+        return;
+      }
+
+      topUserInfoEl.textContent = user.displayName || user.email || "Connecté";
+      notLoggedSection.style.display = "none";
+      statsContent.style.display = "none";
+
+      await loadStatsForUser(user);
+    });
+  </script>
+</body>
+</html>

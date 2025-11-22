@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parasite – Plateau de jeu</title>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b0b10;
+      color: #eee;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      min-height: 100vh;
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: 260px minmax(500px, 780px) 260px;
+      gap: 10px;
+      padding: 10px;
+      width: 100%;
+      max-width: 1280px;
+    }
+
+    .panel {
+      border: 1px solid #353545;
+      border-radius: 10px;
+      padding: 10px;
+      background: radial-gradient(circle at top, #23233a 0, #141420 45%, #101018 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .panel h2 {
+      font-size: 14px;
+      margin: 0 0 6px 0;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #d5d9ff;
+    }
+
+    .panel table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .panel th, .panel td {
+      border-bottom: 1px solid #2b2b3b;
+      padding: 3px 4px;
+      text-align: center;
+    }
+
+    .panel th {
+      font-weight: 600;
+      color: #f0f0ff;
+    }
+
+    .panel tr:last-child td {
+      border-bottom: none;
+    }
+
+    .players-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    .player-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 6px;
+      border-radius: 6px;
+      background: rgba(15, 16, 32, 0.8);
+      border: 1px solid #33354a;
+    }
+
+    .player-main {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .player-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid #fff;
+    }
+
+    .player-name {
+      font-weight: 600;
+    }
+
+    .player-status {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .player-current {
+      border-color: #ffe082;
+      box-shadow: 0 0 6px rgba(255, 224, 130, 0.7);
+    }
+
+    .board-wrapper {
+      border: 1px solid #353545;
+      border-radius: 12px;
+      padding: 10px;
+      background: radial-gradient(circle at top, #262642 0, #171727 55%, #10101a 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      max-width: 100%;
+    }
+
+    .top-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #e7e7ff;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .board-area {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 6px;
+    }
+
+    .top-labels {
+      grid-column: 2 / 3;
+      grid-row: 1 / 2;
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      font-size: 11px;
+      color: #a7a7d5;
+      padding: 0 6px;
+    }
+
+    .top-labels span {
+      text-align: center;
+    }
+
+    .left-labels {
+      grid-column: 1 / 2;
+      grid-row: 2 / 3;
+      display: grid;
+      grid-template-rows: repeat(20, 1fr);
+      font-size: 11px;
+      color: #a7a7d5;
+      padding: 6px 0;
+    }
+
+    .left-labels span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-right: 4px;
+    }
+
+    .board {
+      grid-column: 2 / 3;
+      grid-row: 2 / 3;
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      aspect-ratio: 1 / 1;
+      background: #171725;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #4b4b68;
+      width: 100%;
+      max-width: min(100vw - 40px, 700px);
+      margin: 0 auto;
+      touch-action: manipulation;
+    }
+
+    .cell {
+      border: 1px solid #25253a;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.12s, box-shadow 0.12s, border-color 0.12s;
+      min-width: 18px;
+      min-height: 18px;
+    }
+
+    .cell:hover {
+      background: #272744;
+    }
+
+    .cell.highlight {
+      background: rgba(255, 230, 120, 0.16);
+      box-shadow: inset 0 0 0 2px rgba(255, 230, 120, 0.5);
+    }
+
+    /* base colonies, la vraie couleur vient en inline-style selon le joueur */
+    .cell.colony {
+      background: rgba(160, 200, 255, 0.12);
+      border-color: rgba(200, 220, 255, 0.4);
+    }
+
+    .cell.preview-infect {
+      border-color: #ffb347;
+      box-shadow: 0 0 8px rgba(255, 179, 71, 0.8);
+    }
+
+    .unit {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      border-radius: 50%;
+      width: 78%;
+      height: 78%;
+      margin: auto;
+      box-shadow: 0 0 8px rgba(0,0,0,0.8);
+      color: #fdfdfd;
+      text-shadow: 0 0 4px rgba(0,0,0,0.7);
+    }
+
+    .footer-note {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 4px;
+      min-height: 2.6em;
+      padding: 8px 10px;
+      border-top: 1px solid #353545;
+      border-radius: 0 0 8px 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .footer-note.player-msg {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .creativity-panel {
+      margin-top: 4px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #3d3d55;
+      font-size: 12px;
+      background: rgba(14, 14, 26, 0.9);
+    }
+
+    .creativity-panel-header {
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-align: center;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #ffe082;
+    }
+
+    .creativity-panel-sub {
+      font-size: 11px;
+      color: #d0d0f5;
+      text-align: center;
+    }
+
+    .creativity-options {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: stretch;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .creativity-btn {
+      border: 2px solid #62628c;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: #25253c;
+      cursor: pointer;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 140px;
+      justify-content: center;
+      color: #f4f4ff;
+      font-weight: 700;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.6);
+      transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s, background 0.1s;
+    }
+
+    .creativity-btn span.label {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .creativity-btn span.cost {
+      font-size: 11px;
+      opacity: 0.9;
+      background: rgba(0,0,0,0.2);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .creativity-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+      border-color: #9fa8ff;
+      background: #2f3052;
+    }
+
+    .creativity-btn.disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+      border-style: dashed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .creativity-btn.selected {
+      outline: 2px solid #fff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+      border-color: #ffe082;
+      background: #3d3219;
+    }
+
+    .buttons-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    #reset-turn-btn {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #aa8844;
+      background: linear-gradient(145deg, #c0993a, #8a6c2b);
+      color: #fff9e5;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    #reset-turn-btn:hover {
+      background: linear-gradient(145deg, #d0aa45, #7a5f24);
+    }
+
+    #end-turn-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #48a768;
+      background: linear-gradient(145deg, #3ca358, #2d7c42);
+      color: #e8ffe8;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    #end-turn-btn:hover {
+      background: linear-gradient(145deg, #46b368, #2a6f3c);
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .modal {
+      background: #151526;
+      border-radius: 12px;
+      padding: 16px 18px;
+      border: 1px solid #52527a;
+      width: 320px;
+      max-width: 90vw;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.8);
+      font-size: 13px;
+    }
+
+    .modal h3 {
+      margin: 0 0 10px 0;
+      font-size: 15px;
+      text-align: center;
+      color: #e3e3ff;
+    }
+
+    .modal-section {
+      margin-bottom: 10px;
+    }
+
+    .modal-section-title {
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #c0c0ff;
+    }
+
+    .choice-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .choice-btn {
+      flex: 1;
+      border-radius: 8px;
+      border: 1px solid #4c4d7b;
+      background: #202034;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      text-align: center;
+      color: #f0f0ff;
+    }
+
+    .choice-btn.selected {
+      border-color: #ffeb3b;
+      background: #4e4a23;
+      color: #fffde7;
+      box-shadow: 0 0 6px rgba(255, 235, 59, 0.7);
+    }
+
+    #start-game-btn,
+    #new-game-btn {
+      width: 100%;
+      margin-top: 6px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1px solid #48a0ff;
+      background: linear-gradient(145deg, #4da3ff, #2562c7);
+      color: #eaf4ff;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    #start-game-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .winner-text {
+      text-align: center;
+      font-size: 14px;
+      margin: 8px 0 4px 0;
+    }
+
+    .online-banner {
+      font-size: 11px;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(56, 142, 60, 0.12);
+      border: 1px solid rgba(56, 142, 60, 0.5);
+      color: #b9f6ca;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 1024px) {
+      body { align-items: flex-start; }
+      .game-layout {
+        display: flex;
+        flex-direction: column;
+        padding: 8px;
+        gap: 8px;
+      }
+      .board-wrapper { order: 1; }
+      .panel { order: 2; }
+      .panel:last-of-type { order: 3; }
+    }
+
+    @media (max-width: 600px) {
+      .panel { font-size: 12px; }
+      .panel table { font-size: 11px; }
+      .top-info { font-size: 12px; }
+      .board-wrapper { padding: 8px 6px; }
+      .board { max-width: 100vw; border-width: 2px; }
+      .cell { min-width: 20px; min-height: 20px; }
+      .unit { font-size: 14px; }
+      .footer-note { font-size: 11px; }
+      .buttons-row { flex-direction: column; }
+      .creativity-btn {
+        min-width: 140px;
+        font-size: 14px;
+        padding: 10px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-layout">
+    <!-- Panneau gauche -->
+    <aside class="panel">
+      <h2>Infos & Unités</h2>
+      <p style="font-size:12px;margin:0 0 4px 0;">
+        Prototypage de Parasite – placement, création, infection et colonies.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Unité</th>
+            <th>Coût</th>
+            <th>Dégâts</th>
+            <th>Vie</th>
+            <th>Pts créa.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Reine (R)</td>
+            <td>Ø</td>
+            <td>3</td>
+            <td>8</td>
+            <td>10</td>
+          </tr>
+          <tr>
+            <td>Soldat (A)</td>
+            <td>3</td>
+            <td>4</td>
+            <td>5</td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td>Gardien (D)</td>
+            <td>2</td>
+            <td>2</td>
+            <td>8</td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>Ouvrier (C)</td>
+            <td>2</td>
+            <td>1</td>
+            <td>3</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>Colonie (case)</td>
+            <td>Ø</td>
+            <td>2</td>
+            <td>∞</td>
+            <td>6</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;margin-top:4px;">
+        • Une unité ne crée qu’<b>une fois par tour</b> (mais peut dépenser tous ses points de création).<br/>
+        • Les colonies peuvent créer autour d’elles (8 cases).<br/>
+        • Une colonie ennemie est capturée si <b>4 unités</b> l’entourent (haut, bas, gauche, droite).<br/>
+        • Si une Reine meurt, le joueur qui l’a tuée récupère toutes les unités de ce joueur.
+      </p>
+    </aside>
+
+    <!-- Plateau -->
+    <main class="board-wrapper">
+      <div class="top-info">
+        <span id="turn-info">Choisissez les paramètres de la partie</span>
+        <span id="dev-info">Config</span>
+      </div>
+
+      <div id="online-banner" class="online-banner" style="display:none;">
+        Partie en ligne – code : <span id="online-room-code"></span>
+      </div>
+
+      <div class="board-area">
+        <div></div>
+        <div class="top-labels" id="top-labels"></div>
+        <div class="left-labels" id="left-labels"></div>
+        <div class="board" id="board"></div>
+      </div>
+
+      <div class="creativity-panel" id="creativity-panel"></div>
+
+      <div class="buttons-row">
+        <button id="reset-turn-btn">Réinitialiser le tour</button>
+        <button id="end-turn-btn">Valider le tour</button>
+      </div>
+
+      <div class="footer-note player-msg" id="message">
+        Configure la partie pour commencer.
+      </div>
+
+      <!-- Modal config -->
+      <div class="modal-backdrop" id="config-modal-backdrop">
+        <div class="modal">
+          <h3>Nouvelle partie</h3>
+
+          <div class="modal-section" id="online-config-hint" style="display:none;">
+            <div class="modal-section-title">Partie en ligne</div>
+            <div style="font-size:11px;color:#d0d0f5;">
+              Code de la room : <b id="online-config-room-code"></b><br/>
+              Donne ce code à tes amis pour qu'ils rejoignent.
+            </div>
+          </div>
+
+          <div class="modal-section" id="board-size-section">
+            <div class="modal-section-title">Taille du plateau</div>
+            <div class="choice-row">
+              <button class="choice-btn" data-board-size="10">10 × 10</button>
+              <button class="choice-btn" data-board-size="20">20 × 20</button>
+              <button class="choice-btn" data-board-size="30">30 × 30</button>
+            </div>
+          </div>
+
+          <button id="start-game-btn">Démarrer la partie</button>
+        </div>
+      </div>
+
+      <!-- Modal victoire -->
+      <div class="modal-backdrop hidden" id="winner-modal-backdrop">
+        <div class="modal">
+          <h3>Fin de la partie</h3>
+          <div class="winner-text" id="winner-text"></div>
+          <button id="new-game-btn">Nouvelle partie</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Panneau joueurs -->
+    <aside class="panel">
+      <h2>Joueurs</h2>
+      <div id="players-list" class="players-list"></div>
+    </aside>
+  </div>
+
+   <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    /************************************************************
+     * 1) FIREBASE + PARAMS URL
+     ************************************************************/
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHj4uu6zCqVJIyzXCH3u5LWQQ88sfxLKs",
+      authDomain: "parasite-c66b1.firebaseapp.com",
+      projectId: "parasite-c66b1",
+      storageBucket: "parasite-c66b1.firebasestorage.app",
+      messagingSenderId: "944195028940",
+      appId: "1:944195028940:web:43da8df1acdf4d6d567f69",
+      measurementId: "G-QV1GLRX5MH"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    // --- STATS UTILISATEURS (facultatif : utilisé si tu veux enregistrer les stats) ---
+    const userStatsCol = db.collection("userStats");
+
+    async function updateUserStatsForGame(uid, isWinner, allUids) {
+      const docRef = userStatsCol.doc(uid);
+      const snap = await docRef.get();
+      let stats = snap.exists ? snap.data() : {};
+
+      if (!stats.totalGames) stats.totalGames = 0;
+      if (!stats.wins)       stats.wins       = 0;
+      if (!stats.losses)     stats.losses     = 0;
+      if (!stats.opponents)  stats.opponents  = {};
+
+      stats.totalGames += 1;
+      if (isWinner) stats.wins += 1;
+      else          stats.losses += 1;
+
+      allUids.forEach(otherUid => {
+        if (otherUid === uid) return;
+        if (!stats.opponents[otherUid]) {
+          stats.opponents[otherUid] = { games: 0, wins: 0, losses: 0 };
+        }
+        stats.opponents[otherUid].games += 1;
+        if (isWinner) stats.opponents[otherUid].wins  += 1;
+        else          stats.opponents[otherUid].losses += 1;
+      });
+
+      await docRef.set(stats, { merge: true });
+    }
+
+    async function recordStatsOnlineGame(winner) {
+      try {
+        if (!isOnlineRoom || !roomId || !Array.isArray(roomPlayerIds) || roomPlayerIds.length === 0) {
+          return;
+        }
+        const allUids = roomPlayerIds.slice();
+        const winnerIndex = winner.id - 1;
+        const winnerUid   = allUids[winnerIndex];
+
+        const promises = allUids.map((uid, index) => {
+          const isWinner = (index === winnerIndex);
+          return updateUserStatsForGame(uid, isWinner, allUids);
+        });
+
+        await Promise.all(promises);
+        console.log("[STATS] Stats mises à jour pour tous les joueurs.");
+      } catch (e) {
+        console.error("[STATS] Erreur mise à jour stats", e);
+      }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let roomId      = urlParams.get("room") || null;
+    const isOnlineRoom = !!roomId;
+    const isLocal      = !isOnlineRoom;
+
+    const onlineBannerEl  = document.getElementById("online-banner");
+    const onlineRoomCodeEl= document.getElementById("online-room-code");
+    const onlineConfigHint= document.getElementById("online-config-hint");
+    const onlineConfigRoomCodeEl = document.getElementById("online-config-room-code");
+
+    let gameDocRef   = null;
+    let unsubscribeGame = null;
+    let currentUser  = null;
+
+    // playerIds venant du doc de room (ordre des joueurs)
+    let roomPlayerIds = [];
+
+    function ensureGameDocRef() {
+      if (!gameDocRef && roomId) {
+        gameDocRef = db.collection("games").doc(roomId);
+      }
+      return gameDocRef;
+    }
+
+    /************************************************************
+     * 2) LOGIQUE DE JEU
+     ************************************************************/
+    let BOARD_SIZE   = 0;
+    let NUM_PLAYERS  = 0;
+    let NUM_AI       = 0;
+
+    // Noms venant éventuellement de Firestore (ordre des joueurs 1..N)
+    let playerNamesOverride = null;
+    // Id du joueur local (1..N) mappé depuis currentUser.uid
+    let localPlayerId = null;
+
+    const UNIT_DEFS = {
+      soldier:  { name: "Soldat (A)",  letter: "A", creativeCost: 3, creativePoints: 2 },
+      guardian: { name: "Gardien (D)", letter: "D", creativeCost: 2, creativePoints: 4 },
+      worker:   { name: "Ouvrier (C)", letter: "C", creativeCost: 2, creativePoints: 6 }
+    };
+
+    const UNIT_STATS = {
+      queen:   { attack: 3, defense: 8 },
+      soldier: { attack: 4, defense: 5 },
+      guardian:{ attack: 2, defense: 8 },
+      worker:  { attack: 1, defense: 3 },
+      colony:  { attack: 2, defense: Infinity }
+    };
+
+    // 6 couleurs pour supporter jusqu'à 6 joueurs
+    const PLAYER_COLORS = [
+      "#ff5b5b",
+      "#4d8dff",
+      "#4caf50",
+      "#ffb74d",
+      "#9c27b0",
+      "#00bcd4"
+    ];
+
+    const PHASE_CONFIG       = "CONFIG";
+    const PHASE_PLACE_QUEENS = "PLACE_QUEENS";
+    const PHASE_MAIN         = "MAIN";
+    const PHASE_GAME_OVER    = "GAME_OVER";
+
+    let phase = PHASE_CONFIG;
+    let board = [];
+    let players = [];
+    let currentPlayerIndex = 0;
+    let round = 1;
+
+    // Points d’exploitation globaux (tour)
+    let devPointsRemaining = 2;
+
+    // Création
+    let selectedCreator = null;
+    let selectedUnitType = null;
+    let currentCreatorDevCost = 0;
+    let hasPlacedWithCurrentCreator = false;
+
+    const highlightedCells = new Set();
+    let previewInfections  = new Set();
+
+    let turnSnapshotBoard = null;
+
+    // DOM
+    const boardEl          = document.getElementById("board");
+    const topLabelsEl      = document.getElementById("top-labels");
+    const leftLabelsEl     = document.getElementById("left-labels");
+    const turnInfoEl       = document.getElementById("turn-info");
+    const devInfoEl        = document.getElementById("dev-info");
+    const messageEl        = document.getElementById("message");
+    const creativityPanelEl= document.getElementById("creativity-panel");
+    const endTurnBtn       = document.getElementById("end-turn-btn");
+    const resetTurnBtn     = document.getElementById("reset-turn-btn");
+    const playersListEl    = document.getElementById("players-list");
+
+    const configModalBackdrop = document.getElementById("config-modal-backdrop");
+    const winnerModalBackdrop = document.getElementById("winner-modal-backdrop");
+    const winnerTextEl        = document.getElementById("winner-text");
+    const startGameBtn        = document.getElementById("start-game-btn");
+    const newGameBtn          = document.getElementById("new-game-btn");
+
+    const sizeButtons   = document.querySelectorAll(".choice-btn[data-board-size]");
+
+    let selectedBoardSize   = null;
+
+    /************************************************************
+     * 2.1 UTILITAIRES
+     ************************************************************/
+    function key(x, y) {
+      return `${x},${y}`;
+    }
+
+    function cloneBoard(src) {
+      const copy = [];
+      for (let y = 0; y < BOARD_SIZE; y++) {
+        const row = [];
+        for (let x = 0; x < BOARD_SIZE; x++) {
+          const u = src[y]?.[x] ?? null;
+          row.push(u ? { ...u } : null);
+        }
+        copy.push(row);
+      }
+      return copy;
+    }
+
+    function createEmptyBoard() {
+      const b = [];
+      for (let y = 0; y < BOARD_SIZE; y++) {
+        const row = [];
+        for (let x = 0; x < BOARD_SIZE; x++) {
+          row.push(null);
+        }
+        b.push(row);
+      }
+      return b;
+    }
+
+    function setMessage(text) {
+      messageEl.textContent = text;
+    }
+
+    function distanceBetween(p1, p2) {
+      const dx = p1.x - p2.x;
+      const dy = p1.y - p2.y;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    function getCurrentPlayer() {
+      if (!players || players.length === 0) return null;
+      return players[currentPlayerIndex] || null;
+    }
+
+    function getUnitLetter(unit) {
+      if (unit.type === "queen")   return "R";
+      if (unit.type === "soldier") return "A";
+      if (unit.type === "guardian")return "D";
+      if (unit.type === "worker")  return "C";
+      return "?";
+    }
+
+    function getPlayerColor(ownerId) {
+      const idx = (ownerId - 1) % PLAYER_COLORS.length;
+      return PLAYER_COLORS[idx];
+    }
+
+    function getLocalPlayerInfoText() {
+      if (!currentUser || !Array.isArray(players) || players.length === 0 || localPlayerId == null) {
+        return null;
+      }
+      const me = players.find(p => p.id === localPlayerId);
+      if (!me) return null;
+      const color = getPlayerColor(me.id);
+      return `Tu joues : ${me.name} (Joueur ${me.id}, couleur ${color}).`;
+    }
+
+    /************************************************************
+     * 2.2 LECTURE DES NOMS / MAPPING UID → joueur
+     ************************************************************/
+    function extractPlayerNamesFromData(data) {
+      let names = null;
+
+      if (Array.isArray(data.playerNames)) {
+        names = data.playerNames.slice();
+      }
+
+      const arrayNameFields = ["playerPseudos", "playerUsernames", "usernames", "names"];
+      if (!names) {
+        for (const field of arrayNameFields) {
+          if (Array.isArray(data[field])) {
+            names = data[field].slice();
+            break;
+          }
+        }
+      }
+
+      if (!names && Array.isArray(data.players)) {
+        names = data.players.map(p =>
+          p.pseudo || p.name || p.displayName || p.username || null
+        );
+      }
+
+      if (!names && (data.hostName || data.guestName)) {
+        names = [data.hostName || null, data.guestName || null];
+      }
+
+      if (!names) {
+        const tmp = [];
+        for (let i = 1; i <= 6; i++) {
+          const v = data[`player${i}Name`] || data[`player${i}_name`];
+          if (typeof v === "string" && v.trim() !== "") tmp.push(v);
+        }
+        if (tmp.length > 0) names = tmp;
+      }
+
+      if (!names) return null;
+
+      return names.map((n, i) =>
+        n && typeof n === "string" && n.trim() !== "" ? n : `Joueur ${i+1}`
+      );
+    }
+
+    function mapLocalPlayerIdFromData(data) {
+      if (!currentUser) {
+        localPlayerId = null;
+        return;
+      }
+      const uid = currentUser.uid;
+      let index = null;
+
+      if (Array.isArray(data.players)) {
+        const i = data.players.findIndex(
+          p => p.uid === uid || p.id === uid || p.userId === uid
+        );
+        if (i !== -1) index = i;
+      }
+
+      if (index === null && data.hostUid && data.hostUid === uid) {
+        index = 0;
+      }
+      if (index === null && data.guestUid && data.guestUid === uid) {
+        index = 1;
+      }
+
+      if (index === null && Array.isArray(data.playersUid)) {
+        const i = data.playersUid.indexOf(uid);
+        if (i !== -1) index = i;
+      }
+
+      if (index === null && Array.isArray(data.playerIds)) {
+        const i = data.playerIds.indexOf(uid);
+        if (i !== -1) index = i;
+      }
+
+      if (index === null) {
+        console.log("[DEBUG] Impossible de mapper localPlayerId pour uid=", uid, "dans la room");
+        localPlayerId = null;
+      } else {
+        localPlayerId = index + 1;
+        console.log("[DEBUG] localPlayerId déterminé :", localPlayerId);
+      }
+    }
+
+    function rebuildPlayersFromConfig() {
+      players = [];
+      if (!NUM_PLAYERS || NUM_PLAYERS <= 0) return;
+
+      const aiCount = Math.min(NUM_AI, NUM_PLAYERS);
+      for (let i = 0; i < NUM_PLAYERS; i++) {
+        const isAI = i >= (NUM_PLAYERS - aiCount);
+
+        let baseName;
+        if (playerNamesOverride && Array.isArray(playerNamesOverride) && playerNamesOverride[i]) {
+          baseName = playerNamesOverride[i];
+        } else {
+          baseName = isAI ? `IA ${i + 1}` : `Joueur ${i + 1}`;
+        }
+
+        players.push({
+          id: i + 1,
+          name: baseName,
+          color: getPlayerColor(i + 1),
+          queenPos: null,
+          isAI
+        });
+      }
+
+      if (board && board.length) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          for (let x = 0; x < BOARD_SIZE; x++) {
+            const u = board[y]?.[x] ?? null;
+            if (u && u.type === "queen") {
+              const p = players.find(pl => pl.id === u.owner);
+              if (p) p.queenPos = { x, y };
+            }
+          }
+        }
+      }
+
+      updatePlayersList();
+    }
+
+    function updatePlayersList() {
+      playersListEl.innerHTML = "";
+
+      if (!players || players.length === 0) return;
+
+      const unitsCount = new Map();
+      const queenExists = new Map();
+      for (const p of players) {
+        unitsCount.set(p.id, 0);
+        queenExists.set(p.id, false);
+      }
+
+      if (board && board.length) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          const row = board[y];
+          if (!row) continue;
+          for (let x = 0; x < BOARD_SIZE; x++) {
+            const u = row[x];
+            if (!u) continue;
+            const c = unitsCount.get(u.owner) ?? 0;
+            unitsCount.set(u.owner, c + 1);
+            if (u.type === "queen") {
+              queenExists.set(u.owner, true);
+            }
+          }
+        }
+      }
+
+      players.forEach((p, idx) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "player-item";
+        if (idx === currentPlayerIndex && phase !== PHASE_CONFIG && phase !== PHASE_GAME_OVER) {
+          wrapper.classList.add("player-current");
+        }
+
+        const main = document.createElement("div");
+        main.className = "player-main";
+
+        const dot = document.createElement("div");
+        dot.className = "player-dot";
+        dot.style.background = getPlayerColor(p.id);
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "player-name";
+        nameSpan.textContent = p.name;
+
+        main.appendChild(dot);
+        main.appendChild(nameSpan);
+
+        const status = document.createElement("div");
+        status.className = "player-status";
+
+        const qAlive = queenExists.get(p.id);
+        const count = unitsCount.get(p.id) ?? 0;
+        if (count === 0 && phase === PHASE_MAIN) {
+          status.textContent = "Éliminé";
+          status.style.opacity = "0.6";
+        } else {
+          status.textContent = `Pions : ${count} – Reine : ${qAlive ? "vivante" : "morte"}`;
+        }
+
+        wrapper.appendChild(main);
+        wrapper.appendChild(status);
+        playersListEl.appendChild(wrapper);
+      });
+    }
+
+    /************************************************************
+     * 2.3 RENDU DU PLATEAU
+     ************************************************************/
+    function renderLabels() {
+      if (!BOARD_SIZE || BOARD_SIZE <= 0) {
+        topLabelsEl.innerHTML = "";
+        leftLabelsEl.innerHTML = "";
+        return;
+      }
+
+      topLabelsEl.innerHTML = "";
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        const span = document.createElement("span");
+        span.textContent = String.fromCharCode("A".charCodeAt(0) + i);
+        topLabelsEl.appendChild(span);
+      }
+
+      leftLabelsEl.innerHTML = "";
+      for (let i = 1; i <= BOARD_SIZE; i++) {
+        const span = document.createElement("span");
+        span.textContent = i;
+        leftLabelsEl.appendChild(span);
+      }
+
+      boardEl.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 1fr)`;
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      if (!BOARD_SIZE || BOARD_SIZE <= 0) return;
+
+      for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          const k = key(x, y);
+          const unit = board[y]?.[x] ?? null;
+
+          if (highlightedCells.has(k)) cell.classList.add("highlight");
+          if (previewInfections.has(k)) cell.classList.add("preview-infect");
+
+          if (unit) {
+            if (unit.type === "colony") {
+              cell.classList.add("colony");
+              const col = getPlayerColor(unit.owner);
+              // Couleur de la colonie = couleur du joueur qui possède la colonie
+              cell.style.background = `radial-gradient(circle at 30% 20%, ${col}, #111)`;
+              cell.style.boxShadow = "inset 0 0 4px rgba(0,0,0,0.8)";
+            } else {
+              const uEl = document.createElement("div");
+              uEl.className = "unit";
+              uEl.textContent = getUnitLetter(unit);
+              const color = getPlayerColor(unit.owner);
+              uEl.style.background = `linear-gradient(145deg, ${color}, #111)`;
+              cell.appendChild(uEl);
+            }
+          }
+
+          cell.addEventListener("click", () => handleCellClick(x, y));
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function refreshBoard() {
+      updateInfectionPreview();
+      renderBoard();
+    }
+
+    /************************************************************
+     * 2.4 PANNEAU CRÉATIVITÉ + HUD
+     ************************************************************/
+    function updateCreativityPanel() {
+      if (phase !== PHASE_MAIN) {
+        creativityPanelEl.innerHTML = `
+          <div class="creativity-panel-header">Créativité</div>
+          <div class="creativity-panel-sub">
+            Reine : 10 pts. Soldat : 2, Gardien : 4, Ouvrier : 6, Colonie : 6.<br/>
+            Une unité (ou colonie) ne peut créer qu'une seule fois par tour.
+          </div>
+        `;
+        return;
+      }
+
+      const currentPlayer = getCurrentPlayer();
+      if (!currentPlayer) {
+        creativityPanelEl.innerHTML = "";
+        return;
+      }
+
+      const creator = selectedCreator ? board[selectedCreator.y]?.[selectedCreator.x] ?? null : null;
+
+      if (currentPlayer.isAI) {
+        creativityPanelEl.innerHTML = `
+          <div class="creativity-panel-header">
+            Tour de l'IA (${currentPlayer.name})
+          </div>
+          <div class="creativity-panel-sub">
+            L'IA choisit automatiquement ses placements.
+          </div>
+        `;
+        return;
+      }
+
+      if (!creator || creator.owner !== currentPlayer.id) {
+        creativityPanelEl.innerHTML = `
+          <div class="creativity-panel-header">
+            ${currentPlayer.name} – aucun pion créateur sélectionné
+          </div>
+          <div class="creativity-panel-sub">
+            Points d'exploitation restants : ${devPointsRemaining}.<br/>
+            Clique sur ta Reine (coût 2) ou une autre unité / colonie (coût 1).
+          </div>
+        `;
+        return;
+      }
+
+      const remainingCreative = creator.creative ?? 0;
+      const unitLabel =
+        creator.type === "queen"   ? "Reine (R)" :
+        creator.type === "soldier" ? "Soldat (A)" :
+        creator.type === "guardian"? "Gardien (D)" :
+        creator.type === "worker"  ? "Ouvrier (C)" :
+        creator.type === "colony"  ? "Colonie" :
+        "Pion";
+
+      let optionsHtml = "";
+      for (const k in UNIT_DEFS) {
+        const def = UNIT_DEFS[k];
+        const disabled = remainingCreative < def.creativeCost;
+        const isSelected = selectedUnitType === k ? " selected" : "";
+        optionsHtml += `
+          <button class="creativity-btn${isSelected}${disabled ? " disabled" : ""}" data-unit="${k}">
+            <span class="label">${def.name}</span>
+            <span class="cost">${def.creativeCost} créa</span>
+          </button>
+        `;
+      }
+
+      const canFortress =
+        creator.type !== "queen" &&
+        creator.type !== "colony" &&
+        remainingCreative >= 2;
+
+      creativityPanelEl.innerHTML = `
+        <div class="creativity-panel-header">
+          ${currentPlayer.name} – ${unitLabel} sélectionné(e)
+        </div>
+        <div class="creativity-panel-sub">
+          Points de création de ce pion : ${remainingCreative}.<br/>
+          Choisis un type de pion, puis clique sur une case en surbrillance.
+        </div>
+        <div class="creativity-options">
+          ${optionsHtml}
+        </div>
+        ${canFortress ? `
+          <div style="margin-top:8px;font-size:11px;text-align:center;">
+            <button id="fortress-btn" class="creativity-btn" style="min-width:200px;">
+              <span class="label">Transformer en colonie</span>
+              <span class="cost">2 créa</span>
+            </button>
+            <div style="margin-top:4px;">Transforme cette unité en colonie (hors Reine).</div>
+          </div>
+        ` : ``}
+      `;
+
+      const buttons = creativityPanelEl.querySelectorAll(".creativity-btn[data-unit]");
+      buttons.forEach(btn => {
+        const unitKey = btn.getAttribute("data-unit");
+        const def = UNIT_DEFS[unitKey];
+        const disabled = remainingCreative < def.creativeCost;
+        btn.addEventListener("click", () => {
+          if (disabled) return;
+          selectedUnitType = unitKey;
+          setMessage(
+            `${currentPlayer.name} : ${def.name} sélectionné (coût ${def.creativeCost} créa).`
+          );
+          updateCreativityPanel();
+        });
+      });
+
+      const fortressBtn = document.getElementById("fortress-btn");
+      if (fortressBtn) {
+        fortressBtn.addEventListener("click", () => {
+          const u = board[selectedCreator.y]?.[selectedCreator.x] ?? null;
+          if (!u || u.owner !== currentPlayer.id) return;
+          if (u.type === "queen" || u.type === "colony") return;
+          if ((u.creative ?? 0) < 2) return;
+
+          u.creative -= 2;
+          u.type = "colony";
+          u.creative = 6;
+          // plus de blocage createdThisTurn
+          selectedUnitType = null;
+          highlightedCells.clear();
+          updateInfectionPreview();
+          updateHud();
+          renderBoard();
+          setMessage(`${currentPlayer.name} : l'unité a été transformée en colonie.`);
+        });
+      }
+    }
+
+    function updateHud() {
+      const player = getCurrentPlayer() || { name: "?" };
+
+      if (phase === PHASE_CONFIG) {
+        turnInfoEl.textContent = "Configuration de la partie";
+        devInfoEl.textContent  = "Config";
+        setMessage("Choisis la taille du plateau, puis clique sur “Démarrer la partie”.");
+      } else if (phase === PHASE_PLACE_QUEENS) {
+        const placedCount = players.filter(p => p.queenPos != null).length;
+        turnInfoEl.textContent = `Placement des Reines (${placedCount}/${NUM_PLAYERS || "?"})`;
+        devInfoEl.textContent = "Phase de placement";
+        setMessage(`${player.name} : place ta Reine puis clique sur “Valider le tour”.`);
+      } else if (phase === PHASE_MAIN) {
+        const current = getCurrentPlayer();
+        const infectionsCount = current ? computeInfectionTargets(current.id).length : 0;
+        turnInfoEl.textContent = `Manche ${round} – ${player.name}${player.isAI ? " (IA)" : ""}`;
+        devInfoEl.textContent =
+          `Pts d'exploitation : ${devPointsRemaining} – Infections potentielles : ${infectionsCount}`;
+        if (player.isAI) {
+          setMessage(`${player.name} (IA) joue son tour...`);
+        } else {
+          setMessage(`${player.name} : clique sur tes pions pour créer, puis “Valider le tour”.`);
+        }
+      } else if (phase === PHASE_GAME_OVER) {
+        devInfoEl.textContent = "Partie terminée";
+      }
+
+      updateCreativityPanel();
+      updatePlayersList();
+
+      const info = getLocalPlayerInfoText();
+      if (info) {
+        console.log("[DEBUG]", info);
+      }
+    }
+
+    /************************************************************
+     * 2.5 ZONES DE CRÉATION / INFECTIONS
+     ************************************************************/
+    function getZoneForCreatorType(type, cx, cy) {
+      const cells = [];
+      const add = (x, y) => {
+        if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE) cells.push({ x, y });
+      };
+
+      if (type === "queen") {
+        for (let dy = -3; dy <= 3; dy++) {
+          for (let dx = -3; dx <= 3; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const manhattan = Math.abs(dx) + Math.abs(dy);
+            if (manhattan >= 1 && manhattan <= 3) add(cx + dx, cy + dy);
+          }
+        }
+      } else if (type === "soldier") {
+        [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy]) => add(cx+dx, cy+dy));
+      } else if (type === "guardian") {
+        [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy]) => {
+          add(cx+dx, cy+dy);
+          add(cx+2*dx, cy+2*dy);
+        });
+      } else if (type === "worker") {
+        const card = [[1,0],[-1,0],[0,1],[0,-1]];
+        const diag = [[1,1],[1,-1],[-1,1],[-1,-1]];
+        card.forEach(([dx,dy]) => {
+          add(cx+dx, cy+dy);
+          add(cx+2*dx, cy+2*dy);
+        });
+        diag.forEach(([dx,dy]) => {
+          add(cx+dx, cy+dy);
+          add(cx+2*dx, cy+2*dy);
+        });
+      } else if (type === "colony") {
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            add(cx + dx, cy + dy);
+          }
+        }
+      }
+      return cells;
+    }
+
+    function computeHighlightsForCreator(cx, cy) {
+      highlightedCells.clear();
+      const u = board[cy]?.[cx] ?? null;
+      if (!u) return;
+      const zone = getZoneForCreatorType(u.type, cx, cy);
+      zone.forEach(p => {
+        if (!board[p.y]?.[p.x]) highlightedCells.add(key(p.x, p.y));
+      });
+    }
+
+    function computeInfectionTargets(attackerPlayerId) {
+      const simBoard = cloneBoard(board);
+      const changedKeys = new Set();
+      let changed = true;
+
+      const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
+
+      while (changed) {
+        changed = false;
+        const newlyChanged = [];
+
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          for (let x = 0; x < BOARD_SIZE; x++) {
+            const victim = simBoard[y][x];
+            if (!victim) continue;
+            if (victim.owner === attackerPlayerId) continue;
+
+            const k = key(x, y);
+            if (changedKeys.has(k)) continue;
+
+            if (victim.type !== "colony") {
+              const statsV = UNIT_STATS[victim.type];
+              if (!statsV) continue;
+              const defense = statsV.defense;
+
+              let attackSum = 0;
+              for (const [dx, dy] of dirs) {
+                const nx = x + dx, ny = y + dy;
+                if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) continue;
+                const att = simBoard[ny][nx];
+                if (!att || att.owner !== attackerPlayerId) continue;
+                const statsA = UNIT_STATS[att.type];
+                if (!statsA) continue;
+                attackSum += statsA.attack;
+              }
+
+              if (attackSum >= defense && attackSum > 0) {
+                newlyChanged.push({ x, y });
+                changedKeys.add(k);
+              }
+            } else {
+              let surround = 0;
+              for (const [dx, dy] of dirs) {
+                const nx = x + dx, ny = y + dy;
+                if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) continue;
+                const n = simBoard[ny][nx];
+                if (n && n.owner === attackerPlayerId) surround++;
+              }
+              if (surround === 4) {
+                newlyChanged.push({ x, y });
+                changedKeys.add(k);
+              }
+            }
+          }
+        }
+
+        if (newlyChanged.length > 0) {
+          changed = true;
+          newlyChanged.forEach(p => {
+            simBoard[p.y][p.x] = { owner: attackerPlayerId, type: "colony" };
+          });
+        }
+      }
+
+      return Array.from(changedKeys).map(k => {
+        const [xs, ys] = k.split(",");
+        return { x: Number(xs), y: Number(ys) };
+      });
+    }
+
+    function updateInfectionPreview() {
+      previewInfections.clear();
+      if (phase !== PHASE_MAIN) return;
+      const currentPlayer = getCurrentPlayer();
+      if (!currentPlayer) return;
+      const targets = computeInfectionTargets(currentPlayer.id);
+      targets.forEach(p => previewInfections.add(key(p.x, p.y)));
+    }
+
+    function evaluateInfectionsAndApply(attackerPlayerId) {
+      const before = cloneBoard(board);
+      const targets = computeInfectionTargets(attackerPlayerId);
+
+      targets.forEach(p => {
+        const prev = before[p.y][p.x];
+        board[p.y][p.x] = {
+          owner: attackerPlayerId,
+          type: "colony",
+          creative: 6
+        };
+
+        if (prev && prev.type === "queen" && prev.owner !== attackerPlayerId) {
+          const defeatedId = prev.owner;
+          for (let yy = 0; yy < BOARD_SIZE; yy++) {
+            for (let xx = 0; xx < BOARD_SIZE; xx++) {
+              const u = board[yy][xx];
+              if (u && u.owner === defeatedId) {
+                u.owner = attackerPlayerId;
+              }
+            }
+          }
+          const pl = players.find(p => p.id === defeatedId);
+          if (pl) pl.queenPos = null;
+        }
+      });
+
+      if (targets.length > 0) {
+        setMessage(
+          `${getCurrentPlayer().name} : ${targets.length} pion(s) infectés et transformés en colonies.`
+        );
+      }
+
+      updatePlayersList();
+      checkForWinner();
+    }
+
+    /************************************************************
+     * 2.6 DÉROULEMENT DES TOURS
+     ************************************************************/
+    function startNewPlayerTurn() {
+      devPointsRemaining = 2;
+      selectedCreator = null;
+      selectedUnitType = null;
+      currentCreatorDevCost = 0;
+      hasPlacedWithCurrentCreator = false;
+      highlightedCells.clear();
+
+      const current = getCurrentPlayer();
+      if (current) {
+        const currentId = current.id;
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          for (let x = 0; x < BOARD_SIZE; x++) {
+            const u = board[y][x];
+            if (u && u.owner === currentId) {
+              // possibilité de réutiliser les unités à chaque tour
+              if (u.creative == null) {
+                if (u.type === "queen")      u.creative = 10;
+                else if (u.type === "colony")u.creative = 6;
+              }
+            }
+          }
+        }
+      }
+
+      turnSnapshotBoard = cloneBoard(board);
+      updateInfectionPreview();
+      updateHud();
+      renderBoard();
+    }
+
+    function checkForWinner() {
+      const owners = new Set();
+      for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+          const u = board[y][x];
+          if (!u) continue;
+          owners.add(u.owner);
+        }
+      }
+
+      if (owners.size === 1 && owners.size > 0) {
+        const winnerId = owners.values().next().value;
+        const winner = players.find(p => p.id === winnerId);
+        if (winner) {
+          phase = PHASE_GAME_OVER;
+          showWinnerModal(winner, "a contrôlé tout le plateau.");
+          return;
+        }
+      }
+
+      let full = true;
+      const counts = new Map();
+      players.forEach(p => counts.set(p.id, 0));
+
+      for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+          const u = board[y][x];
+          if (!u) {
+            full = false;
+            break;
+          }
+          counts.set(u.owner, (counts.get(u.owner) || 0) + 1);
+        }
+        if (!full) break;
+      }
+
+      if (full) {
+        let bestPlayer = null;
+        let bestCount  = -1;
+        for (const p of players) {
+          const c = counts.get(p.id) || 0;
+          if (c > bestCount) {
+            bestCount = c;
+            bestPlayer = p;
+          }
+        }
+        if (bestPlayer) {
+          phase = PHASE_GAME_OVER;
+          showWinnerModal(bestPlayer, "a le plus de pions sur le plateau.");
+        }
+      }
+    }
+
+    function showWinnerModal(winner, reason) {
+      winnerTextEl.textContent = `${winner.name} a gagné la partie (${reason})`;
+      winnerModalBackdrop.classList.remove("hidden");
+      if (isOnlineRoom) {
+        recordStatsOnlineGame(winner);
+      }
+      updateHud();
+    }
+
+    /************************************************************
+     * 2.7 CLIC SUR LE PLATEAU
+     ************************************************************/
+    function handleCellClick(x, y) {
+      if (phase === PHASE_CONFIG || phase === PHASE_GAME_OVER) return;
+
+      const currentPlayer = getCurrentPlayer();
+      if (!currentPlayer) {
+        setMessage("La partie n'est pas encore correctement configurée.");
+        return;
+      }
+
+      if (isOnlineRoom && localPlayerId != null) {
+        const active = players[currentPlayerIndex];
+        if (!active) return;
+        if (active.id !== localPlayerId) {
+          setMessage("Ce n'est pas ton tour. Attends que l'autre joueur joue.");
+          return;
+        }
+      }
+
+      if (currentPlayer.isAI && phase === PHASE_MAIN) {
+        return;
+      }
+
+      const currentCell = board[y]?.[x] ?? null;
+
+      /***********************
+       * PHASE PLACEMENT REINES
+       ***********************/
+      if (phase === PHASE_PLACE_QUEENS) {
+        if (currentPlayer.queenPos) {
+          setMessage("Tu as déjà placé ta Reine. Clique sur “Valider le tour”.");
+          return;
+        }
+
+        if (currentCell) {
+          setMessage("Cette case est déjà occupée. Choisis une autre case pour placer ta Reine.");
+          return;
+        }
+
+        for (const p of players) {
+          if (!p.queenPos) continue;
+          const dist = distanceBetween({x, y}, p.queenPos);
+          if (dist < 5) {
+            setMessage("Les Reines doivent être à au moins 5 cases de distance des autres Reines.");
+            return;
+          }
+        }
+
+        board[y][x] = {
+          owner: currentPlayer.id,
+          type: "queen",
+          creative: 10
+        };
+        currentPlayer.queenPos = { x, y };
+
+        if (isOnlineRoom) {
+          saveGameStateToFirestore();
+        }
+
+        setMessage(`${currentPlayer.name} : Reine placée. Clique sur “Valider le tour” pour passer au joueur suivant.`);
+        renderBoard();
+        updatePlayersList();
+        return;
+      }
+
+      /***********************
+       * PHASE JEU PRINCIPAL
+       ***********************/
+      if (phase === PHASE_MAIN) {
+        // 1) sélection d'un créateur
+        if (currentCell && currentCell.owner === currentPlayer.id) {
+          const devCost = currentCell.type === "queen" ? 2 : 1;
+
+          let availableDev = devPointsRemaining;
+          if (selectedCreator && !hasPlacedWithCurrentCreator) {
+            // on "rend" le coût de l'ancien créateur si on change d'avis avant de poser
+            availableDev += currentCreatorDevCost;
+          }
+
+          if (availableDev < devCost) {
+            setMessage(
+              `Tu n'as plus assez de points d'exploitation pour utiliser ce pion (coût ${devCost}).`
+            );
+            return;
+          }
+
+          devPointsRemaining = availableDev - devCost;
+          selectedCreator = { x, y };
+          selectedUnitType = null;
+          currentCreatorDevCost = devCost;
+          hasPlacedWithCurrentCreator = false;
+
+          if (currentCell.creative == null) {
+            if (currentCell.type === "queen")      currentCell.creative = 10;
+            else if (currentCell.type === "colony")currentCell.creative = 6;
+            else                                   currentCell.creative = 0;
+          }
+
+          computeHighlightsForCreator(x, y);
+          refreshBoard();
+          updateHud();
+          setMessage(
+            `${currentPlayer.name} : pion sélectionné. Utilise ses points de création.`
+          );
+          return;
+        }
+
+        // 2) placement d'un nouveau pion si un créateur + type sont choisis
+        if (selectedCreator && selectedUnitType) {
+          if (currentCell) {
+            setMessage("Cette case est déjà occupée. Choisis une case vide en surbrillance.");
+            return;
+          }
+          const k = key(x, y);
+          if (!highlightedCells.has(k)) {
+            setMessage("Tu dois placer l'unité sur une case en surbrillance.");
+            return;
+          }
+
+          const creatorUnit = board[selectedCreator.y]?.[selectedCreator.x] ?? null;
+          if (!creatorUnit || creatorUnit.owner !== currentPlayer.id) {
+            setMessage("Le pion créateur sélectionné n'est plus valide.");
+            return;
+          }
+
+          const def = UNIT_DEFS[selectedUnitType];
+          if (creatorUnit.creative == null) creatorUnit.creative = 0;
+          if (creatorUnit.creative < def.creativeCost) {
+            setMessage("Ce pion n'a plus assez de points de création pour cette unité.");
+            updateCreativityPanel();
+            return;
+          }
+
+          creatorUnit.creative -= def.creativeCost;
+
+          board[y][x] = {
+            owner: currentPlayer.id,
+            type: selectedUnitType,
+            creative: def.creativePoints
+          };
+
+          // ✅ on peut utiliser directement ce pion ensuite (plus de blocage createdThisTurn)
+          hasPlacedWithCurrentCreator = true;
+          computeHighlightsForCreator(selectedCreator.x, selectedCreator.y);
+          refreshBoard();
+          updateHud();
+          setMessage(`${currentPlayer.name} : ${def.name} placé.`);
+          return;
+        }
+
+        setMessage(`${currentPlayer.name} : clique d'abord sur un de tes pions.`);
+      }
+    }
+
+    /************************************************************
+     * 2.8 SAUVEGARDE CONFIG + ÉTAT DE JEU EN LIGNE
+     ************************************************************/
+    async function saveConfigToFirestore() {
+      if (!isOnlineRoom) return;
+      ensureGameDocRef();
+      if (!gameDocRef) return;
+
+      try {
+        await gameDocRef.set({
+          boardSize: BOARD_SIZE,
+          numPlayers: NUM_PLAYERS,
+          numAI: 0,
+          phase: phase
+        }, { merge: true });
+        console.log("[Firestore] Config sauvegardée", {
+          boardSize: BOARD_SIZE,
+          numPlayers: NUM_PLAYERS,
+          numAI: 0,
+          phase
+        });
+      } catch (e) {
+        console.error("[Firestore] ERREUR saveConfigToFirestore", e);
+      }
+    }
+
+    async function saveGameStateToFirestore() {
+      if (!isOnlineRoom) return;
+      ensureGameDocRef();
+      if (!gameDocRef) return;
+
+      const boardData = {};
+      if (board && board.length && BOARD_SIZE > 0) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          const row = board[y] || [];
+          const safeRow = [];
+          for (let x = 0; x < BOARD_SIZE; x++) {
+            safeRow[x] = row[x] ?? null;
+          }
+          boardData[y] = safeRow;
+        }
+      }
+
+      try {
+        await gameDocRef.set({
+          boardSize: BOARD_SIZE,
+          numPlayers: NUM_PLAYERS,
+          numAI: 0,
+          phase: phase,
+          round: round,
+          currentPlayerIndex: currentPlayerIndex,
+          board: boardData
+        }, { merge: true });
+        console.log("[Firestore] État de jeu sauvegardé");
+      } catch (e) {
+        console.error("[Firestore] ERREUR saveGameStateToFirestore", e);
+      }
+    }
+
+    function applyGameStateFromData(data) {
+      if (!data) return;
+
+      if (Array.isArray(data.playerIds)) {
+        roomPlayerIds = data.playerIds.slice();
+      }
+
+      if (typeof data.boardSize === "number") BOARD_SIZE = data.boardSize;
+
+      if (typeof data.numPlayers === "number" && data.numPlayers > 0) {
+        NUM_PLAYERS = data.numPlayers;
+      } else if (typeof data.maxPlayers === "number" && data.maxPlayers > 0) {
+        NUM_PLAYERS = data.maxPlayers;
+      } else if (Array.isArray(data.playerIds) && data.playerIds.length > 0) {
+        NUM_PLAYERS = data.playerIds.length;
+      } else {
+        NUM_PLAYERS = 2;
+      }
+      NUM_PLAYERS = Math.min(NUM_PLAYERS, PLAYER_COLORS.length);
+
+      if (typeof data.numAI === "number") NUM_AI = data.numAI; else NUM_AI = 0;
+      if (data.phase) phase = data.phase;
+      if (typeof data.round === "number") round = data.round;
+      if (typeof data.currentPlayerIndex === "number") currentPlayerIndex = data.currentPlayerIndex;
+
+      if (data.playerNamesById && Array.isArray(data.playerIds)) {
+        playerNamesOverride = data.playerIds.map((uid, i) =>
+          data.playerNamesById[uid] || `Joueur ${i + 1}`
+        );
+        console.log("[DEBUG] Noms depuis playerNamesById", playerNamesOverride);
+      } else {
+        const names = extractPlayerNamesFromData(data);
+        if (names) {
+          playerNamesOverride = names;
+          console.log("[DEBUG] Noms joueurs trouvés (fallback)", playerNamesOverride);
+        }
+      }
+
+      mapLocalPlayerIdFromData(data);
+
+      if (data.board) {
+        if (Array.isArray(data.board)) {
+          board = data.board;
+        } else {
+          board = [];
+          for (let y = 0; y < BOARD_SIZE; y++) {
+            const row = data.board[y] || [];
+            const safeRow = [];
+            for (let x = 0; x < BOARD_SIZE; x++) {
+              safeRow[x] = row[x] ?? null;
+            }
+            board[y] = safeRow;
+          }
+        }
+      } else {
+        if (BOARD_SIZE > 0) {
+          board = createEmptyBoard();
+        } else {
+          board = [];
+        }
+      }
+
+      rebuildPlayersFromConfig();
+
+      if (BOARD_SIZE > 0) {
+        renderLabels();
+        if (!board || !board.length) board = createEmptyBoard();
+        renderBoard();
+      }
+      updateHud();
+
+      if (phase !== PHASE_CONFIG) {
+        configModalBackdrop.classList.add("hidden");
+      }
+    }
+
+    /************************************************************
+     * 2.9 BOUTONS (VALIDER, RESET, MODAL)
+     ************************************************************/
+    endTurnBtn.addEventListener("click", async () => {
+      if (phase === PHASE_PLACE_QUEENS) {
+        const currentPlayer = getCurrentPlayer();
+        if (!currentPlayer) return;
+
+        if (isOnlineRoom && localPlayerId != null) {
+          const active = players[currentPlayerIndex];
+          if (!active || active.id !== localPlayerId) {
+            setMessage("Ce n'est pas ton tour. Tu ne peux pas valider.");
+            return;
+          }
+        }
+
+        if (!currentPlayer.queenPos) {
+          setMessage("Place d'abord ta Reine avant de valider le tour.");
+          return;
+        }
+
+        const totalPlaced = players.filter(p => p.queenPos != null).length;
+
+        if (totalPlaced < NUM_PLAYERS) {
+          currentPlayerIndex = (currentPlayerIndex + 1) % NUM_PLAYERS;
+          await saveGameStateToFirestore();
+          updateHud();
+          renderBoard();
+          setMessage(`${getCurrentPlayer().name} : place ta Reine.`);
+          return;
+        } else {
+          phase = PHASE_MAIN;
+          currentPlayerIndex = 0;
+          round = 1;
+          turnSnapshotBoard = cloneBoard(board);
+          startNewPlayerTurn();
+          await saveGameStateToFirestore();
+          return;
+        }
+      }
+
+      if (phase === PHASE_MAIN) {
+        if (isOnlineRoom && localPlayerId != null) {
+          const active = players[currentPlayerIndex];
+          if (!active || active.id !== localPlayerId) {
+            setMessage("Ce n'est pas ton tour. Tu ne peux pas valider le tour.");
+            return;
+          }
+        }
+
+        const currentPlayer = getCurrentPlayer();
+        if (!currentPlayer) return;
+
+        evaluateInfectionsAndApply(currentPlayer.id);
+        refreshBoard();
+
+        if (phase === PHASE_GAME_OVER) {
+          if (isOnlineRoom) await saveGameStateToFirestore();
+          return;
+        }
+
+        currentPlayerIndex = (currentPlayerIndex + 1) % NUM_PLAYERS;
+        if (currentPlayerIndex === 0) {
+          round++;
+        }
+        startNewPlayerTurn();
+
+        if (isOnlineRoom) {
+          await saveGameStateToFirestore();
+        }
+      }
+    });
+
+    resetTurnBtn.addEventListener("click", () => {
+      if (phase !== PHASE_MAIN || !turnSnapshotBoard) return;
+
+      if (isOnlineRoom && localPlayerId != null) {
+        const active = players[currentPlayerIndex];
+        if (!active || active.id !== localPlayerId) {
+          setMessage("Ce n'est pas ton tour, tu ne peux pas réinitialiser.");
+          return;
+        }
+      }
+
+      const currentPlayer = getCurrentPlayer();
+      if (currentPlayer && currentPlayer.isAI) return;
+
+      board = cloneBoard(turnSnapshotBoard);
+      devPointsRemaining = 2;
+      selectedCreator = null;
+      selectedUnitType = null;
+      currentCreatorDevCost = 0;
+      hasPlacedWithCurrentCreator = false;
+      highlightedCells.clear();
+      refreshBoard();
+      updateHud();
+      setMessage(`${getCurrentPlayer().name} : tour réinitialisé.`);
+    });
+
+    sizeButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        sizeButtons.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedBoardSize = parseInt(btn.getAttribute("data-board-size"), 10);
+      });
+    });
+
+    startGameBtn.addEventListener("click", () => {
+      if (!selectedBoardSize) {
+        setMessage("Choisis la taille du plateau avant de démarrer.");
+        return;
+      }
+      const playersCount = NUM_PLAYERS && NUM_PLAYERS > 0 ? NUM_PLAYERS : 2;
+      startNewMatch(selectedBoardSize, playersCount, 0);
+    });
+
+    newGameBtn.addEventListener("click", () => {
+      winnerModalBackdrop.classList.add("hidden");
+      showConfigModal();
+    });
+
+    function showConfigModal() {
+      phase = PHASE_CONFIG;
+      configModalBackdrop.classList.remove("hidden");
+      board = [];
+      boardEl.innerHTML = "";
+      topLabelsEl.innerHTML = "";
+      leftLabelsEl.innerHTML = "";
+      playersListEl.innerHTML = "";
+      turnInfoEl.textContent = "Configuration de la partie";
+      devInfoEl.textContent = "Config";
+      setMessage("Choisis la taille du plateau, puis démarre la partie.");
+      creativityPanelEl.innerHTML = "";
+    }
+
+    function startNewMatch(size, numPlayers, numAIRequested) {
+      BOARD_SIZE  = size;
+      NUM_PLAYERS = Math.min(numPlayers || 2, PLAYER_COLORS.length);
+      NUM_AI      = 0;
+
+      board = createEmptyBoard();
+      renderLabels();
+      renderBoard();
+
+      rebuildPlayersFromConfig();
+
+      phase = PHASE_PLACE_QUEENS;
+      currentPlayerIndex = 0;
+      round = 1;
+      devPointsRemaining = 2;
+      selectedCreator = null;
+      selectedUnitType = null;
+      highlightedCells.clear();
+      previewInfections.clear();
+      turnSnapshotBoard = null;
+
+      configModalBackdrop.classList.add("hidden");
+      winnerModalBackdrop.classList.add("hidden");
+      updateHud();
+
+      saveConfigToFirestore();
+      if (isOnlineRoom) saveGameStateToFirestore();
+    }
+
+    /************************************************************
+     * 3) PARTIE EN LIGNE : INIT ROOM
+     ************************************************************/
+    function initOnlineRoom() {
+      if (!isOnlineRoom || !roomId) return;
+
+      onlineBannerEl.style.display = "block";
+      onlineRoomCodeEl.textContent = roomId;
+      onlineConfigHint.style.display = "block";
+      onlineConfigRoomCodeEl.textContent = roomId;
+
+      ensureGameDocRef();
+
+      gameDocRef.get().then(docSnap => {
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          applyGameStateFromData(data);
+        } else {
+          updateHud();
+        }
+
+        unsubscribeGame = gameDocRef.onSnapshot(snap => {
+          const liveData = snap.data();
+          if (!liveData) return;
+          applyGameStateFromData(liveData);
+        });
+      }).catch(err => {
+        console.error("Erreur initOnlineRoom", err);
+        setMessage("Erreur lors du chargement de la partie en ligne.");
+      });
+    }
+
+    /************************************************************
+     * 4) INIT GLOBALE
+     ************************************************************/
+    function init() {
+      if (isOnlineRoom) {
+        setMessage("Partie en ligne – configure la partie, puis tes amis rejoignent avec le même code.");
+      } else {
+        setMessage("Configure la partie pour commencer.");
+      }
+
+      updateHud();
+      updatePlayersList();
+
+      if (isOnlineRoom) {
+        initOnlineRoom();
+      }
+    }
+
+    auth.onAuthStateChanged(user => {
+      currentUser = user || null;
+      init();
+    });
+  </script>
+</body>
+</html>
